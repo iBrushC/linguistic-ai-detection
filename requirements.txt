@@ -2,6 +2,7 @@ json >= 2.0.9
 requests >= 2.32.4
 bs4 == 4.13.5
 nltk >= 3.9.1
+spacy >= 3.7.0
 npm >= 2.0.2
 pandas >= 2.2.2
 matplotlib >= 3.10.0
