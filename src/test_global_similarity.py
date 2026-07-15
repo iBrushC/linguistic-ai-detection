@@ -169,6 +169,76 @@ def test_invalid_method_raises() -> None:
     raise AssertionError("expected ValueError for unknown method")
 
 
+def test_brunnermunzel_identical_returns_one() -> None:
+    metrics = _make_metrics(120, seed=77)
+    result = global_similarity(metrics, metrics, method="brunnermunzel")
+    assert result["similarity"] is not None, result
+    assert _is_close(result["similarity"], 1.0), (
+        f"identical BM inputs should give 1.0, got {result['similarity']}"
+    )
+    assert result["method"] == "brunnermunzel"
+    assert "family_means" in result
+    assert set(result["family_means"]) >= {"lexical", "pos", "structural"}
+    # Underlying BM relative effect should be ~0.5 for identical inputs,
+    # which the similarity mapping lifts to ~1.0.
+    info = result["per_metric"]["pos_NN"]
+    assert abs(info["bm_effect"] - 0.5) < 0.05, (
+        f"identical pos_NN BM effect should be near 0.5, got {info['bm_effect']}"
+    )
+    assert _is_close(info["bm_similarity"], 1.0, abs_tol=0.1), (
+        f"identical pos_NN bm_similarity should be ~1.0, got {info['bm_similarity']}"
+    )
+
+
+def test_brunnermunzel_different_lower_than_identical() -> None:
+    a = _make_metrics(120, seed=77)
+    b = _make_metrics(120, seed=88)
+    res_id = global_similarity(a, a, method="brunnermunzel")
+    res_diff = global_similarity(a, b, method="brunnermunzel")
+    assert res_id["similarity"] > res_diff["similarity"], (
+        f"identical pair ({res_id['similarity']:.4f}) should score higher "
+        f"than disjoint pair ({res_diff['similarity']:.4f})"
+    )
+    assert 0.0 <= res_diff["similarity"] <= 1.0
+
+
+def test_brunnermunzel_handles_degenerate_metric() -> None:
+    a = _make_metrics(120, seed=1)
+    b = _make_metrics(120, seed=2)
+    a["constant_metric"] = [5.0] * 120
+    b["constant_metric"] = [5.0] * 120
+    result = global_similarity(a, b, method="brunnermunzel")
+    assert result["similarity"] is not None, result
+    assert 0.0 <= result["similarity"] <= 1.0
+    assert any(d.get("name") == "constant_metric" for d in result["dropped"]), (
+        f"constant metric should be dropped, got {result['dropped']}"
+    )
+    assert any(d.get("reason") == "constant" for d in result["dropped"])
+
+
+def test_brunnermunzel_excludes_red_herrings() -> None:
+    """The 6 metrics flagged by diagnose_bm.py as anti-signal are skipped."""
+    metrics = _make_metrics(120, seed=77)
+    metrics["dep_conjunct"] = [1, 2, 3, 4] * 30
+    metrics["anadiplosis_counts"] = [0, 1] * 60
+    metrics["pos_JJS"] = [0, 1, 0, 1, 0, 1] * 20
+    metrics["segments_per_sentence"] = [2, 3] * 60
+    metrics["existential_extraposition_counts"] = [0, 1] * 60
+    metrics["pos_CC"] = [1, 2] * 60
+    result = global_similarity(metrics, metrics, method="brunnermunzel")
+    for name in (
+        "dep_conjunct", "anadiplosis_counts", "pos_JJS",
+        "segments_per_sentence", "existential_extraposition_counts", "pos_CC",
+    ):
+        assert name not in result["per_metric"], (
+            f"{name} should be excluded from per_metric"
+        )
+        entry = next((d for d in result["dropped"] if d.get("name") == name), None)
+        assert entry is not None and entry.get("reason") == "red_herring", (
+            f"{name} should appear in dropped with reason 'red_herring', got {entry}"
+        )
+
+
 def test_weighted_identical_inputs_stay_full_similarity() -> None:
     """Symmetric weighting is multiplicative so identical inputs remain 1.0."""
     metrics = _make_metrics(200, seed=42)
@@ -360,6 +430,18 @@ if __name__ == "__main__":
 
     test_invalid_method_raises()
     print("[ok] unknown method raises ValueError")
+
+    test_brunnermunzel_identical_returns_one()
+    print("[ok] identical inputs -> similarity 1.0 (brunnermunzel)")
+
+    test_brunnermunzel_different_lower_than_identical()
+    print("[ok] different inputs score lower than identical (brunnermunzel)")
+
+    test_brunnermunzel_handles_degenerate_metric()
+    print("[ok] constant metric dropped, similarity still computable (brunnermunzel)")
+
+    test_brunnermunzel_excludes_red_herrings()
+    print("[ok] 6 red-herring metrics are excluded (brunnermunzel)")
 
     test_weighted_identical_inputs_stay_full_similarity()
     print("[ok] weighted identical inputs remain 1.0")

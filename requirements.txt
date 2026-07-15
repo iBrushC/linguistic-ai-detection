@@ -8,3 +8,4 @@ pandas >= 2.2.2
 matplotlib >= 3.10.0
 statsmodels >= 0.14.0
 openrouter >= 0.3.0
+datasets >= 2.14.0

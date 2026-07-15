@@ -4,6 +4,7 @@
 #   python test.py single                              # existing single-author smoke test
 #   python test.py author-similarity                   # pair-averaged author matrix
 #   python test.py author-similarity --method manova
+#   python test.py author-similarity --method brunnermunzel
 #   python test.py author-similarity --out-dir DIR --workers N --no-cache
 #   python test.py author-similarity --weights metric_weights.json
 #   python test.py author-similarity --no-weights
@@ -540,6 +541,11 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
             print(f"[weights] WARNING: --weights file missing or empty: {weights_path}")
     elif args.method == "manova" and args.weights:
         print("[weights] NOTE: --weights is only applied to the 'simple' method")
+    elif args.method == "brunnermunzel" and args.weights:
+        print(
+            "[weights] NOTE: --weights is not applied to the 'brunnermunzel' "
+            "method; using prototype-style fixed weights"
+        )
 
     def _persist():
         if not args.no_cache:
@@ -647,7 +653,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_sim.add_argument(
         "--method",
-        choices=["simple", "manova"],
+        choices=["simple", "manova", "brunnermunzel"],
         default="simple",
         help="global_similarity method (default: simple).",
     )

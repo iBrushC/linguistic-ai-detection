@@ -5,6 +5,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.stats import brunnermunzel as _brunnermunzel
 from scipy.stats import ks_2samp, ttest_ind
 from statsmodels.multivariate.manova import MANOVA
 
@@ -781,6 +782,191 @@ def _select_per_sentence_features(
     return aligned, dropped
 
 
+# Metrics identified as anti-signal (cross-author BM p-value lower than
+# same-author BM p-value, signal < 0) by src/diagnose_bm.py on the 16-essay
+# ground-truth corpus. They are excluded from the BM aggregation so they do
+# not actively widen the off-diagonal means relative to the diagonal means.
+_BM_EXCLUDED_METRICS = frozenset({
+    "dep_conjunct",
+    "existential_extraposition_counts",
+    "pos_CC",
+    "anadiplosis_counts",
+    "segments_per_sentence",
+    "pos_JJS",
+})
+
+
+def _bm_effect_size(a: np.ndarray, b: np.ndarray) -> float:
+    """Brunner-Munzel relative effect: P(X < Y) + 0.5 * P(X == Y).
+
+    Lives in ``[0, 1]`` and equals ``0.5`` exactly when X and Y are
+    stochastically equal. This is what the BM literature calls the
+    "statistic" of the test, but it is NOT what
+    ``scipy.stats.brunnermunzel(...).statistic`` returns -- scipy returns a
+    standardized W that is t-distributed under the null (centered at 0 for
+    equal samples). We compute the relative effect directly because it is
+    the natural [0, 1] effect size we want for similarity aggregation, and
+    because it is much less sensitive to per-essay sample size than the
+    BM p-value (which was the dominant failure mode for authors with
+    longer essays such as Matthew Green).
+
+    Uses O(nx * ny) memory; fine for the per-sentence and per-word sample
+    sizes produced here (max ~1000 x 1000 = 10^6 floats).
+    """
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    nx, ny = a.size, b.size
+    if nx == 0 or ny == 0:
+        return float("nan")
+    diff = a[:, None] - b[None, :]
+    n_lt = int(np.count_nonzero(diff < 0))
+    n_eq = int(np.count_nonzero(diff == 0))
+    return (n_lt + 0.5 * n_eq) / (nx * ny)
+
+
+def _bm_effect_to_similarity(effect: float) -> float:
+    """Map BM relative effect in [0, 1] to a [0, 1] similarity score.
+
+    ``effect == 0.5`` -> similarity ``1.0`` (stochastically equal).
+    ``effect in {0, 1}`` -> similarity ``0.0`` (one distribution strictly
+    dominates the other).
+    """
+    if np.isnan(effect):
+        return float("nan")
+    return float(max(0.0, 1.0 - 2.0 * abs(effect - 0.5)))
+
+
+def _global_brunnermunzel(
+    metrics_a: dict[str, list],
+    metrics_b: dict[str, list],
+    min_appearances: int = 10,
+) -> dict:
+    """Aggregate per-metric Brunner-Munzel relative effects into [0, 1].
+
+    For each shared, non-constant metric we compute the BM relative effect
+    ``P(X < Y) + 0.5 * P(X == Y)`` (in [0, 1], with 0.5 = same), then map
+    it to a similarity via ``1 - 2 * |effect - 0.5|``. We aggregate
+    similarities, NOT p-values, because p-values are dominated by sample
+    size and the resulting off-diagonal means were systematically
+    compressed by longer essays.
+
+    - The lexical family (``sentence_lengths``, ``words_per_sentence``,
+      ``word_lengths``) gets fixed weights ``[0.2, 0.2, 1.0]`` and is
+      reduced to a weighted mean of per-metric BM similarities.
+    - Every other family (``pos_*``, ``dep_*``, ``connective_*``, structural
+      markers, TTR/CTTR) gets sample-size-proportional weights
+      ``mean(len(array_a), len(array_b))`` per metric.
+    - Headline similarity is the unweighted mean across family-level scores,
+      so it lives in ``[0, 1]``: high means stochastically similar (likely
+      same author); low means the distributions are systematically shifted.
+    - ``_BM_EXCLUDED_METRICS`` are dropped with reason ``red_herring`` to
+      keep anti-signal metrics out of the aggregation.
+
+    Metrics with fewer than two observations in either group or zero
+    variance across both groups are dropped (with reason).
+    """
+    _LEXICAL_WEIGHTS = {
+        "sentence_lengths": 0.2,
+        "words_per_sentence": 0.2,
+        "word_lengths": 1.0,
+    }
+
+    n_a = _sentence_count(metrics_a) or 0
+    n_b = _sentence_count(metrics_b) or 0
+    all_names = sorted(set(metrics_a) | set(metrics_b))
+
+    per_metric: dict[str, dict] = {}
+    dropped: list[dict] = []
+
+    family_metrics: dict[str, dict[str, tuple[float, float]]] = {
+        "lexical": {},
+        "pos": {},
+        "dep": {},
+        "connective": {},
+        "structural": {},
+    }
+
+    for name in all_names:
+        if name in _BM_EXCLUDED_METRICS:
+            dropped.append({"name": name, "reason": "red_herring"})
+            continue
+
+        a, b, skip = _normalize_metric_array(
+            metrics_a.get(name), metrics_b.get(name), n_a, n_b
+        )
+        if a is None:
+            dropped.append({"name": name, "reason": skip})
+            continue
+        if a.size < 2 or b.size < 2:
+            dropped.append({"name": name, "reason": "n_lt_2"})
+            continue
+
+        combined = np.concatenate([a, b])
+        if float(combined.std()) == 0.0:
+            dropped.append({"name": name, "reason": "constant"})
+            continue
+
+        try:
+            bm_effect = _bm_effect_size(a, b)
+        except (ValueError, FloatingPointError):
+            dropped.append({"name": name, "reason": "bm_failed"})
+            continue
+        if np.isnan(bm_effect):
+            dropped.append({"name": name, "reason": "bm_nan"})
+            continue
+
+        bm_sim = _bm_effect_to_similarity(bm_effect)
+
+        if name in _LEXICAL_WEIGHTS:
+            family = "lexical"
+            w = _LEXICAL_WEIGHTS[name]
+        else:
+            if name.startswith("pos_"):
+                family = "pos"
+            elif name.startswith("dep_"):
+                family = "dep"
+            elif name.startswith("connective_"):
+                family = "connective"
+            else:
+                family = "structural"
+            w = float((a.size + b.size) / 2.0)
+
+        family_metrics[family][name] = (bm_sim, w)
+        per_metric[name] = {
+            "bm_effect": bm_effect,
+            "bm_similarity": bm_sim,
+            "weight": w,
+            "n_a": int(a.size),
+            "n_b": int(b.size),
+        }
+
+    family_scores: dict[str, float] = {}
+    for fam, mdict in family_metrics.items():
+        if not mdict:
+            continue
+        num = sum(w * s for s, w in mdict.values())
+        den = sum(w for _, w in mdict.values())
+        if den > 0:
+            family_scores[fam] = num / den
+
+    if family_scores:
+        similarity = float(sum(family_scores.values()) / len(family_scores))
+    else:
+        similarity = 1.0
+
+    return {
+        "similarity": similarity,
+        "method": "brunnermunzel",
+        "weighting": "bm_effect_family_mean_equal_within_lexical_fixed",
+        "n_metrics": len(per_metric),
+        "n_metrics_used": len(per_metric),
+        "n_metrics_dropped": len(dropped),
+        "per_metric": per_metric,
+        "dropped": dropped,
+        "family_means": family_scores,
+    }
+
+
 def _global_manova(
     metrics_a: dict[str, list],
     metrics_b: dict[str, list],
@@ -962,14 +1148,18 @@ def global_similarity(
     ----------
     metrics_a, metrics_b : dict[str, list]
         Output of get_all_metrics for each text.
-    method : {"simple", "manova"}
+    method : {"simple", "manova", "brunnermunzel"}
         "simple" averages per-metric Kolmogorov-Smirnov distances using
         capped linear weights derived from combined non-zero observations.
         "manova" runs a sentence-level statsmodels MANOVA over the
         per-sentence feature matrix and reports 1 - Pillai's trace.
+        "brunnermunzel" runs a Brunner-Munzel test per metric and reports
+        the family-averaged mean of per-metric p-values; high similarity
+        means the distributions are statistically indistinguishable.
     min_appearances : int
         Threshold for the capped linear weight (simple) and the absolute
-        sparsity filter on combined non-zero observations (MANOVA).
+        sparsity filter on combined non-zero observations (MANOVA). The
+        brunnermunzel method does not currently consume this threshold.
 
     Returns
     -------
@@ -982,7 +1172,16 @@ def global_similarity(
         return _global_simple(metrics_a, metrics_b, min_appearances, metric_weights)
     if method == "manova":
         return _global_manova(metrics_a, metrics_b, min_appearances)
-    raise ValueError(f"unknown method: {method!r}; expected 'simple' or 'manova'")
+    if method == "brunnermunzel":
+        if metric_weights:
+            print(
+                "[brunnermunzel] NOTE: --weights is not applied to the "
+                "'brunnermunzel' method; using prototype-style fixed weights"
+            )
+        return _global_brunnermunzel(metrics_a, metrics_b, min_appearances)
+    raise ValueError(
+        f"unknown method: {method!r}; expected 'simple', 'manova', or 'brunnermunzel'"
+    )
 
 
 def print_global_similarity(
@@ -1017,17 +1216,30 @@ def print_global_similarity(
 
     per = result.get("per_metric")
     if per and top > 0:
-        ranked = sorted(
-            per.items(),
-            key=lambda kv: kv[1]["weight"] * (1.0 - kv[1]["ks_distance"]),
-            reverse=True,
-        )
-        print(f"  top {top} contributors (weight x similarity):")
-        for name, info in ranked[:top]:
-            print(
-                f"    {name:<38} w={info['weight']:.2f} "
-                f"ks={info['ks_distance']:.3f} sim={info['similarity']:.3f}"
+        if result.get("method") == "brunnermunzel":
+            ranked = sorted(
+                per.items(),
+                key=lambda kv: kv[1]["weight"] * kv[1]["bm_similarity"],
+                reverse=True,
             )
+            print(f"  top {top} contributors (weight x BM similarity):")
+            for name, info in ranked[:top]:
+                print(
+                    f"    {name:<38} w={info['weight']:.2f} "
+                    f"bm_effect={info['bm_effect']:.3f} bm_sim={info['bm_similarity']:.3f}"
+                )
+        else:
+            ranked = sorted(
+                per.items(),
+                key=lambda kv: kv[1]["weight"] * (1.0 - kv[1]["ks_distance"]),
+                reverse=True,
+            )
+            print(f"  top {top} contributors (weight x similarity):")
+            for name, info in ranked[:top]:
+                print(
+                    f"    {name:<38} w={info['weight']:.2f} "
+                    f"ks={info['ks_distance']:.3f} sim={info['similarity']:.3f}"
+                )
 
     dropped = result.get("dropped")
     if dropped:

@@ -1,62 +1,90 @@
-# Collects the dataset
 import json
-import requests
-from bs4 import BeautifulSoup
+import os
+import random
 
-# Sample Essays
-essays = [
-    "https://publicdomainreview.org/essay/jumbos-ghost/",
-    "https://publicdomainreview.org/essay/william-wells-brown-wildcat-banker/",
-    "https://publicdomainreview.org/essay/race-and-the-white-elephant-war-of-1884/",
-    "https://publicdomainreview.org/essay/george-washington-at-the-siamese-court/",
-    "https://publicdomainreview.org/essay/the-tale-of-beatrix-potter/",
-    "https://publicdomainreview.org/essay/time-and-place-eric-ravilious-1903-1942/",
-    "https://publicdomainreview.org/essay/seeing-joyce/",
-    "https://publicdomainreview.org/essay/in-search-of-true-color/",
-    "https://publicdomainreview.org/essay/the-kept-and-the-killed/",
-    "https://publicdomainreview.org/essay/the-mark-of-the-beast-georgian-britains-anti-vaxxer-movement/",
-    "https://publicdomainreview.org/essay/the-city-that-fell-off-a-cliff/",
-    "https://publicdomainreview.org/essay/the-secret-history-of-holywell-street-home-to-victorian-london-s-dirty-book-trade/",
-    "https://publicdomainreview.org/essay/the-lost-world-of-the-london-coffeehouse/",
-    "https://publicdomainreview.org/essay/pods-pots-and-potions-putting-cacao-to-paper-in-early-modern-europe/",
-    "https://publicdomainreview.org/essay/when-chocolate-was-medicine-colmenero-wadsworth-and-dufour/",
-    "https://publicdomainreview.org/essay/mother-gooses-french-birth-1697-and-british-afterlife-1729/"
-]
+from datasets import load_dataset
 
-# Fetching essays from links
-def fetch_essay(url: str) -> dict:
-    r = requests.get(url)
-    soup = BeautifulSoup(r.content)
 
-    essay = {}
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ESSAYS_PATH = os.path.join(REPO_ROOT, "essays.json")
 
-    # Header
-    essay_header = soup.select_one("div.essay-header")
-    essay_header_parts = list(essay_header.children)
-    essay["title"] = essay_header_parts[1].text
-    essay["author"] = essay_header_parts[2].text
+DATASET_NAME = "Efstathios/guardian_authorship"
+DATASET_CONFIG = "cross_topic_1"
 
-    # Intro
-    essay_intro = soup.select_one("div.essay-intro")
-    essay["intro"] = essay_intro.text[:essay_intro.text.find("Published")]
+AUTHOR_NAMES = {
+    0: "Catherine Bennett",
+    1: "George Monbiot",
+    2: "Hugo Young",
+    3: "Jonathan Freedland",
+    4: "Martin Kettle",
+}
 
-    # Body
-    essay_body = soup.select("div.essay__text-block")
-    body_text = "\n".join([b.text for b in essay_body])
-    essay["body"] = body_text
+TOPIC_NAMES = {
+    0: "Politics",
+    1: "Society",
+    2: "UK",
+    3: "World",
+    4: "Books",
+}
 
-    return essay
+SEED = 42
+ESSAYS_PER_AUTHOR = 5
+
+
+def build_essays() -> list[dict]:
+    ds = load_dataset(DATASET_NAME, DATASET_CONFIG, trust_remote_code=True)
+
+    pool: list[dict] = []
+    for split in ("train", "validation", "test"):
+        if split in ds:
+            pool.extend(ds[split])
+
+    by_author: dict[int, list[dict]] = {aid: [] for aid in AUTHOR_NAMES}
+    for row in pool:
+        if row["author"] in by_author:
+            by_author[row["author"]].append(row)
+
+    rng = random.Random(SEED)
+    essays: list[dict] = []
+    for aid in sorted(AUTHOR_NAMES):
+        rows = by_author[aid]
+        rng.shuffle(rows)
+        picked = rows[:ESSAYS_PER_AUTHOR]
+        if len(picked) < ESSAYS_PER_AUTHOR:
+            print(
+                f"[warn] {AUTHOR_NAMES[aid]} only has {len(picked)} articles "
+                f"in {DATASET_CONFIG}; using {len(picked)} instead of {ESSAYS_PER_AUTHOR}"
+            )
+        for row in picked:
+            text = row["article"].strip()
+            essays.append({
+                "title": text.split("\n", 1)[0][:120],
+                "author": AUTHOR_NAMES[aid],
+                "intro": "",
+                "body": text,
+                "topic": TOPIC_NAMES[row["topic"]],
+            })
+
+    return essays
+
+
+def topic_distribution(essays: list[dict]) -> dict[str, dict[str, int]]:
+    out: dict[str, dict[str, int]] = {}
+    for e in essays:
+        a = e["author"]
+        out.setdefault(a, {})
+        out[a][e["topic"]] = out[a].get(e["topic"], 0) + 1
+    return out
 
 
 if __name__ == "__main__":
-    # Create the dataset
-    extracted_essays = [
-        fetch_essay(e) for e in essays
-    ]
+    essays = build_essays()
+    with open(ESSAYS_PATH, "w", encoding="utf-8") as f:
+        json.dump(essays, f, ensure_ascii=False, indent=2)
 
-    # Clean up the data to remove licensing
-    for e in extracted_essays:
-        e["body"] = e["body"].replace("The text of this essay is published under a CC BY-SA license, see here for details.", "")
-
-    with open("essays.json", "w+") as f:
-        f.write(json.dumps(extracted_essays))
+    print(f"Wrote {len(essays)} essays across {len(AUTHOR_NAMES)} authors to {ESSAYS_PATH}")
+    print("\nPer-author topic distribution:")
+    dist = topic_distribution(essays)
+    for author in sorted(dist):
+        topics = ", ".join(f"{t}={c}" for t, c in sorted(dist[author].items()))
+        print(f"  {author:<22} {topics}")
