@@ -7,3 +7,4 @@ npm >= 2.0.2
 pandas >= 2.2.2
 matplotlib >= 3.10.0
 statsmodels >= 0.14.0
+openrouter >= 0.3.0
