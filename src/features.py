@@ -49,8 +49,8 @@ class FeatureExtractor(abc.ABC):
     @abc.abstractmethod
     def transform(self, items: Sequence): ...
 
-    def fit_transform(self, items: Sequence):
-        self.fit(items)
+    def fit_transform(self, items: Sequence, reference_corpus: Sequence | None = None):
+        self.fit(items, reference_corpus=reference_corpus)
         return self.transform(items)
 
     @abc.abstractmethod
@@ -93,7 +93,10 @@ class MFWExtractor(FeatureExtractor):
     def _count(self, text: str) -> Counter:
         return Counter(self._tokenize(text, self.lowercase))
 
-    def fit(self, corpus: Sequence) -> None:
+    def fit(self, corpus: Sequence, reference_corpus: Sequence | None = None) -> None:
+        if reference_corpus is None:
+            reference_corpus = corpus
+
         counts: Counter = Counter()
         for item in corpus:
             counts.update(self._count(_text_of(item)))
@@ -102,7 +105,8 @@ class MFWExtractor(FeatureExtractor):
         self.vocab_ = types
         self._vocab_index = {w: i for i, w in enumerate(types)}
 
-        ref_vectors = self._vectorise_many([_text_of(it) for it in corpus])
+        ref_texts = [_text_of(it) for it in reference_corpus]
+        ref_vectors = self._vectorise_many(ref_texts)
         if ref_vectors.size == 0:
             self._mu = np.zeros(len(self.vocab_), dtype=np.float64)
             self._sigma = np.zeros(len(self.vocab_), dtype=np.float64)
@@ -171,7 +175,8 @@ class CharNGramExtractor(FeatureExtractor):
     def _texts(self, items: Sequence) -> list[str]:
         return [_text_of(it) for it in items]
 
-    def fit(self, corpus: Sequence) -> None:
+    def fit(self, corpus: Sequence, reference_corpus: Sequence | None = None) -> None:
+        del reference_corpus  # char n-grams have no reference stats
         self.vectorizer_ = TfidfVectorizer(
             analyzer="char_wb",
             ngram_range=self.ngram_range,

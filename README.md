@@ -89,3 +89,35 @@ end-to-end smoke test on a synthetic corpus.
 `src/configs/default.json` carries every knob: chunk size, MFW N,
 reference corpus path, feature set, distance set, permutation count,
 output directory. CLI flags override individual keys.
+
+## OpenRouter cross-validation experiment
+
+Tests whether Cosine Delta can flag AI text masquerading as a target
+human author. Picks five authors and five essays per author (seed
+1729), generates one shared writing assignment per essay with
+`glm-5.2`, recreates each essay with the same model using the other
+four natural essays for stylistic context, then runs five
+leave-one-out folds per author.
+
+```
+set OPENROUTER_API_KEY=...
+python -m src.experiment select --out-dir generated
+python -m src.generate details --model glm-5.2 --use-selector generated/experiment_manifest.json
+python -m src.generate recreate --model glm-5.2 --use-selector generated/experiment_manifest.json
+python -m src.experiment score --manifest generated/experiment_manifest.json --out-dir src/plots/experiment_first
+```
+
+For every fold the scoring fits MFW vocabulary on natural chunks and
+reference mu/sigma on `reference_corpus.json` only; AI chunks never
+participate in fitting. The mean Cosine Delta from each target's
+chunks to the four-essay corpus is computed for both the natural and
+the AI-recreated essays. Outputs:
+
+* `generated/experiment_manifest.json` -- deterministic selection.
+* `generated/essay_details.json` -- shared assignments.
+* `generated/essays_glm-5.2_recreate.json` -- recreations.
+* `src/plots/experiment_<run>/folds.json` -- per-fold distances.
+* `src/plots/experiment_<run>/summary.json` -- per-author and overall
+  mean/SD.
+* `src/plots/experiment_<run>/folds_cosine_delta.png` -- grouped
+  natural vs AI bar chart with SD error bars.

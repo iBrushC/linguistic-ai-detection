@@ -127,15 +127,15 @@ def run(config: dict, out_dir: str, run_dir: str | None = None) -> dict:
     chunk_texts = _chunk_dict_to_text(chunks)
     ref_texts = [a["text"] for a in ref_articles]
 
-    union_for_fitting = list(chunk_texts) + list(ref_texts)
-    print(f"[run] fitting extractors on union of {len(union_for_fitting)} documents "
-          f"({len(chunk_texts)} chunks + {len(ref_texts)} reference)")
+    union_for_fitting = list(chunk_texts)
+    print(f"[run] fitting extractors on {len(union_for_fitting)} test chunks; "
+          f"reference statistics drawn from {len(ref_texts)} reference documents")
 
     fitted = {}
     X_cache = {}
     for fname in config["features"]:
         ext = FEATURE_BUILDERS[fname](config)
-        ext.fit(union_for_fitting)
+        ext.fit(union_for_fitting, reference_corpus=ref_texts)
         X_test = ext.transform(chunk_texts)
         fitted[fname] = ext
         X_cache[fname] = X_test
