@@ -1,0 +1,105 @@
+{
+  "method": "manova",
+  "authors": [
+    "Christine Jones",
+    "Erica X Eisen",
+    "Frank Delaney",
+    "Matthew Green",
+    "Ross Bullen"
+  ],
+  "matrix": {
+    "Christine Jones": {
+      "Christine Jones": 0.918711,
+      "Erica X Eisen": 0.849789,
+      "Frank Delaney": 0.889418,
+      "Matthew Green": 0.943219,
+      "Ross Bullen": 0.937419
+    },
+    "Erica X Eisen": {
+      "Christine Jones": 0.849789,
+      "Erica X Eisen": 0.881598,
+      "Frank Delaney": 0.752295,
+      "Matthew Green": 0.847847,
+      "Ross Bullen": 0.919647
+    },
+    "Frank Delaney": {
+      "Christine Jones": 0.889418,
+      "Erica X Eisen": 0.752295,
+      "Frank Delaney": 0.949405,
+      "Matthew Green": 0.91092,
+      "Ross Bullen": 0.891286
+    },
+    "Matthew Green": {
+      "Christine Jones": 0.943219,
+      "Erica X Eisen": 0.847847,
+      "Frank Delaney": 0.91092,
+      "Matthew Green": 0.94739,
+      "Ross Bullen": 0.954306
+    },
+    "Ross Bullen": {
+      "Christine Jones": 0.937419,
+      "Erica X Eisen": 0.919647,
+      "Frank Delaney": 0.891286,
+      "Matthew Green": 0.954306,
+      "Ross Bullen": 0.952188
+    }
+  },
+  "self_info": {
+    "Christine Jones": {
+      "author": "Christine Jones",
+      "mean": 0.9187110294853101,
+      "std": 0.037801263058896604,
+      "n_permutations": 3,
+      "per_permutation": [
+        0.8914971638493263,
+        0.9027631043826849,
+        0.9618728202239192
+      ]
+    },
+    "Erica X Eisen": {
+      "author": "Erica X Eisen",
+      "mean": 0.8815981586004576,
+      "std": 0.05125639403350077,
+      "n_permutations": 3,
+      "per_permutation": [
+        0.9076370681119188,
+        0.822549372729579,
+        0.9146080349598753
+      ]
+    },
+    "Frank Delaney": {
+      "author": "Frank Delaney",
+      "mean": 0.9494046491466205,
+      "std": 0.022753058754014295,
+      "n_permutations": 3,
+      "per_permutation": [
+        0.9409254002621043,
+        0.9751797892880545,
+        0.9321087578897028
+      ]
+    },
+    "Matthew Green": {
+      "author": "Matthew Green",
+      "mean": 0.9473903142161068,
+      "std": 0.010563929102892477,
+      "n_permutations": 3,
+      "per_permutation": [
+        0.9520980741302636,
+        0.9547819124686356,
+        0.9352909560494209
+      ]
+    },
+    "Ross Bullen": {
+      "author": "Ross Bullen",
+      "mean": 0.9521876255528579,
+      "std": 0.023404633179440804,
+      "n_permutations": 4,
+      "per_permutation": [
+        0.9667906708457706,
+        0.9416236310945476,
+        0.9245719413785456,
+        0.9757642588925676
+      ]
+    }
+  }
+}
