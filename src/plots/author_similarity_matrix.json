@@ -1,5 +1,6 @@
 {
   "method": "simple",
+  "comparison_unit": "mean_essay_pairs",
   "authors": [
     "Christine Jones",
     "Erica X Eisen",
@@ -9,99 +10,173 @@
   ],
   "matrix": {
     "Christine Jones": {
-      "Christine Jones": 0.883926,
-      "Erica X Eisen": 0.845904,
-      "Frank Delaney": 0.876339,
-      "Matthew Green": 0.912625,
-      "Ross Bullen": 0.906999
+      "Christine Jones": 0.917493,
+      "Erica X Eisen": 0.82488,
+      "Frank Delaney": 0.871963,
+      "Matthew Green": 0.89684,
+      "Ross Bullen": 0.898012
     },
     "Erica X Eisen": {
-      "Christine Jones": 0.845904,
-      "Erica X Eisen": 0.84524,
-      "Frank Delaney": 0.815262,
-      "Matthew Green": 0.864524,
-      "Ross Bullen": 0.895533
+      "Christine Jones": 0.82488,
+      "Erica X Eisen": 0.835672,
+      "Frank Delaney": 0.791519,
+      "Matthew Green": 0.828986,
+      "Ross Bullen": 0.849555
     },
     "Frank Delaney": {
-      "Christine Jones": 0.876339,
-      "Erica X Eisen": 0.815262,
-      "Frank Delaney": 0.891785,
-      "Matthew Green": 0.921596,
-      "Ross Bullen": 0.886344
+      "Christine Jones": 0.871963,
+      "Erica X Eisen": 0.791519,
+      "Frank Delaney": 0.921264,
+      "Matthew Green": 0.894063,
+      "Ross Bullen": 0.870481
     },
     "Matthew Green": {
-      "Christine Jones": 0.912625,
-      "Erica X Eisen": 0.864524,
-      "Frank Delaney": 0.921596,
-      "Matthew Green": 0.895232,
-      "Ross Bullen": 0.923633
+      "Christine Jones": 0.89684,
+      "Erica X Eisen": 0.828986,
+      "Frank Delaney": 0.894063,
+      "Matthew Green": 0.904508,
+      "Ross Bullen": 0.902477
     },
     "Ross Bullen": {
-      "Christine Jones": 0.906999,
-      "Erica X Eisen": 0.895533,
-      "Frank Delaney": 0.886344,
-      "Matthew Green": 0.923633,
-      "Ross Bullen": 0.908173
+      "Christine Jones": 0.898012,
+      "Erica X Eisen": 0.849555,
+      "Frank Delaney": 0.870481,
+      "Matthew Green": 0.902477,
+      "Ross Bullen": 0.913307
     }
   },
   "self_info": {
     "Christine Jones": {
       "author": "Christine Jones",
-      "mean": 0.8839260471985454,
-      "std": 0.02421325366441012,
-      "n_permutations": 3,
-      "per_permutation": [
-        0.8964361449747462,
-        0.899325206752212,
-        0.856016789868678
+      "mean": 0.9174929011217466,
+      "std": 0.007851082762713268,
+      "n_pairs": 3,
+      "pairs": [
+        {
+          "essay_a": 13,
+          "essay_b": 14,
+          "similarity": 0.9193205814815475
+        },
+        {
+          "essay_a": 13,
+          "essay_b": 15,
+          "similarity": 0.9088891852000821
+        },
+        {
+          "essay_a": 14,
+          "essay_b": 15,
+          "similarity": 0.9242689366836103
+        }
       ]
     },
     "Erica X Eisen": {
       "author": "Erica X Eisen",
-      "mean": 0.8452404071489443,
-      "std": 0.025727049427805952,
-      "n_permutations": 3,
-      "per_permutation": [
-        0.8715937872562706,
-        0.8201891396312256,
-        0.8439382945593366
+      "mean": 0.8356720828507345,
+      "std": 0.04132839786816471,
+      "n_pairs": 3,
+      "pairs": [
+        {
+          "essay_a": 7,
+          "essay_b": 8,
+          "similarity": 0.81859029819381
+        },
+        {
+          "essay_a": 7,
+          "essay_b": 9,
+          "similarity": 0.8828030768252167
+        },
+        {
+          "essay_a": 8,
+          "essay_b": 9,
+          "similarity": 0.8056228735331764
+        }
       ]
     },
     "Frank Delaney": {
       "author": "Frank Delaney",
-      "mean": 0.8917847743894888,
-      "std": 0.008927402002200395,
-      "n_permutations": 3,
-      "per_permutation": [
-        0.8857087804338235,
-        0.9020345831782972,
-        0.8876109595563454
+      "mean": 0.9212636528374714,
+      "std": 0.013563759692956392,
+      "n_pairs": 3,
+      "pairs": [
+        {
+          "essay_a": 4,
+          "essay_b": 5,
+          "similarity": 0.9271892647720401
+        },
+        {
+          "essay_a": 4,
+          "essay_b": 6,
+          "similarity": 0.905745333363805
+        },
+        {
+          "essay_a": 5,
+          "essay_b": 6,
+          "similarity": 0.930856360376569
+        }
       ]
     },
     "Matthew Green": {
       "author": "Matthew Green",
-      "mean": 0.8952315525741957,
-      "std": 0.02491711370909491,
-      "n_permutations": 3,
-      "per_permutation": [
-        0.9056651025175564,
-        0.9132358527773757,
-        0.8667937024276551
+      "mean": 0.9045080688529225,
+      "std": 0.01874723108764874,
+      "n_pairs": 3,
+      "pairs": [
+        {
+          "essay_a": 10,
+          "essay_b": 11,
+          "similarity": 0.9256867435689377
+        },
+        {
+          "essay_a": 10,
+          "essay_b": 12,
+          "similarity": 0.8900384639257108
+        },
+        {
+          "essay_a": 11,
+          "essay_b": 12,
+          "similarity": 0.8977989990641188
+        }
       ]
     },
     "Ross Bullen": {
       "author": "Ross Bullen",
-      "mean": 0.9081725105833967,
-      "std": 0.011455244860430577,
-      "n_permutations": 4,
-      "per_permutation": [
-        0.9215646669287508,
-        0.895084307007585,
-        0.9126557680855998,
-        0.9033853003116513
+      "mean": 0.9133067418271085,
+      "std": 0.009659197078246393,
+      "n_pairs": 6,
+      "pairs": [
+        {
+          "essay_a": 0,
+          "essay_b": 1,
+          "similarity": 0.9152143380366979
+        },
+        {
+          "essay_a": 0,
+          "essay_b": 2,
+          "similarity": 0.9297785714562892
+        },
+        {
+          "essay_a": 0,
+          "essay_b": 3,
+          "similarity": 0.9048132353439
+        },
+        {
+          "essay_a": 1,
+          "essay_b": 2,
+          "similarity": 0.9024735663750288
+        },
+        {
+          "essay_a": 1,
+          "essay_b": 3,
+          "similarity": 0.9146732182775006
+        },
+        {
+          "essay_a": 2,
+          "essay_b": 3,
+          "similarity": 0.9128875214732347
+        }
       ]
     }
   },
   "metric_weights_applied": true,
-  "metric_weights_count": 53
+  "metric_weights_count": 57
 }

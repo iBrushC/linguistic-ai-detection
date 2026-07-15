@@ -2,14 +2,14 @@
 #
 # CLI:
 #   python test.py single                              # existing single-author smoke test
-#   python test.py author-similarity                   # LOO self + concat cross matrix
+#   python test.py author-similarity                   # pair-averaged author matrix
 #   python test.py author-similarity --method manova
 #   python test.py author-similarity --out-dir DIR --workers N --no-cache
 #   python test.py author-similarity --weights metric_weights.json
 #   python test.py author-similarity --no-weights
 #
 # Outputs from `author-similarity` are written to out-dir (default src/plots/):
-#   - author_self_similarity.png      bar chart of LOO self-similarity per author
+#   - author_self_similarity.png      within-author essay-pair similarity bars
 #   - author_similarity_heatmap.png   n x n heatmap of self + cross similarity
 #   - author_similarity_matrix.json   full matrix + per-cell metadata
 #   - metric_weights.json             produced by tune.py; loaded when present
@@ -23,6 +23,7 @@ import json
 import os
 import sys
 from concurrent.futures import ThreadPoolExecutor
+from itertools import combinations, product
 
 import matplotlib
 
@@ -53,6 +54,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_ESSAYS_PATH = os.path.join(REPO_ROOT, "essays.json")
 DEFAULT_OUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "plots")
 CACHE_FILENAME = ".essay_metrics_cache.json"
+CACHE_SCHEMA_VERSION = 2
 SELF_BAR_FILENAME = "author_self_similarity.png"
 HEATMAP_FILENAME = "author_similarity_heatmap.png"
 MATRIX_JSON_FILENAME = "author_similarity_matrix.json"
@@ -95,17 +97,27 @@ def _load_cache(out_dir: str) -> dict:
         return {}
     try:
         with open(path, encoding="utf-8") as f:
-            return json.load(f)
+            payload = json.load(f)
     except (OSError, json.JSONDecodeError):
         return {}
+    if not isinstance(payload, dict):
+        return {}
+    if payload.get("schema_version") != CACHE_SCHEMA_VERSION:
+        return {}
+    entries = payload.get("entries")
+    return entries if isinstance(entries, dict) else {}
 
 
 def _save_cache(out_dir: str, cache: dict) -> None:
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, CACHE_FILENAME)
     tmp = path + ".tmp"
+    payload = {
+        "schema_version": CACHE_SCHEMA_VERSION,
+        "entries": cache,
+    }
     with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False)
+        json.dump(payload, f, ensure_ascii=False)
     os.replace(tmp, path)
 
 
@@ -123,7 +135,7 @@ def _ensure_metrics(
     if workers <= 1:
         # Persist incrementally so an interrupted run keeps partial progress.
         try:
-            _save_cache(os.path.dirname(_resolve_out_dir()), cache)
+            _save_cache(_resolve_out_dir(), cache)
         except OSError:
             pass
     return metrics
@@ -172,8 +184,31 @@ def _compute_essay_metrics_parallel(
 # Author-similarity core
 # ---------------------------------------------------------------------------
 
-def _concat_bodies(essays: list[dict], indices: list[int]) -> str:
-    return "\n\n".join(essays[i]["body"] for i in indices)
+
+def _compute_essay_pair_similarity(
+    index_a: int,
+    index_b: int,
+    essays: list[dict],
+    cache: dict,
+    method: str,
+    metric_weights: dict[str, float] | None = None,
+) -> float:
+    metrics_a = _ensure_metrics(essays[index_a]["body"], cache)
+    metrics_b = _ensure_metrics(essays[index_b]["body"], cache)
+    result = global_similarity(
+        metrics_a,
+        metrics_b,
+        method=method,
+        metric_weights=metric_weights,
+    )
+    similarity = result.get("similarity")
+    if similarity is None:
+        print(
+            f"[pair] essays {index_a} vs {index_b}: similarity is None "
+            f"({result.get('error', 'no error key')}); treating as 0.0"
+        )
+        return 0.0
+    return float(similarity)
 
 
 def compute_self_similarity(
@@ -184,42 +219,39 @@ def compute_self_similarity(
     method: str,
     metric_weights: dict[str, float] | None = None,
 ) -> dict:
-    """LOO self-similarity: average global_similarity over N permutations."""
+    """Average every unordered essay-pair similarity within one author."""
     if len(indices) < 2:
         raise ValueError(
-            f"author {author!r} has only {len(indices)} essay(s); need >=2 for LOO"
+            f"author {author!r} has only {len(indices)} essay(s); need >=2"
         )
 
-    per_perm: list[float] = []
-    for held_out in indices:
-        corpus_idx = [i for i in indices if i != held_out]
-        corpus_text = _concat_bodies(essays, corpus_idx)
-        held_text = essays[held_out]["body"]
-
-        corpus_metrics = _ensure_metrics(corpus_text, cache)
-        held_metrics = _ensure_metrics(held_text, cache)
-
-        result = global_similarity(
-            corpus_metrics, held_metrics, method=method,
-            metric_weights=metric_weights,
+    pairs = list(combinations(indices, 2))
+    scores = [
+        _compute_essay_pair_similarity(
+            index_a,
+            index_b,
+            essays,
+            cache,
+            method,
+            metric_weights,
         )
-        sim = result.get("similarity")
-        if sim is None:
-            print(
-                f"[self] {author} LOO held={held_out}: similarity is None "
-                f"({result.get('error', 'no error key')}); treating as 0.0"
-            )
-            sim = 0.0
-        per_perm.append(float(sim))
-        print(f"[self] {author} LOO held={held_out}: {sim:.4f}")
-
-    arr = np.asarray(per_perm, dtype=float)
+        for index_a, index_b in pairs
+    ]
+    arr = np.asarray(scores, dtype=float)
+    print(f"[self] {author}: {arr.mean():.4f} across {len(pairs)} essay pairs")
     return {
         "author": author,
         "mean": float(arr.mean()),
         "std": float(arr.std(ddof=1)) if arr.size > 1 else 0.0,
-        "n_permutations": int(arr.size),
-        "per_permutation": [float(x) for x in per_perm],
+        "n_pairs": int(arr.size),
+        "pairs": [
+            {
+                "essay_a": int(index_a),
+                "essay_b": int(index_b),
+                "similarity": float(score),
+            }
+            for (index_a, index_b), score in zip(pairs, scores)
+        ],
     }
 
 
@@ -233,24 +265,25 @@ def compute_cross_similarity(
     method: str,
     metric_weights: dict[str, float] | None = None,
 ) -> float:
-    """Concat(A) vs concat(B): single similarity score per author pair."""
-    text_a = _concat_bodies(essays, indices_a)
-    text_b = _concat_bodies(essays, indices_b)
-    metrics_a = _ensure_metrics(text_a, cache)
-    metrics_b = _ensure_metrics(text_b, cache)
-    result = global_similarity(
-        metrics_a, metrics_b, method=method,
-        metric_weights=metric_weights,
-    )
-    sim = result.get("similarity")
-    if sim is None:
-        print(
-            f"[cross] {author_a} vs {author_b}: similarity is None "
-            f"({result.get('error', 'no error key')}); treating as 0.0"
+    """Average every essay-pair similarity across two authors."""
+    pairs = list(product(indices_a, indices_b))
+    scores = [
+        _compute_essay_pair_similarity(
+            index_a,
+            index_b,
+            essays,
+            cache,
+            method,
+            metric_weights,
         )
-        return 0.0
-    print(f"[cross] {author_a} vs {author_b}: {sim:.4f}")
-    return float(sim)
+        for index_a, index_b in pairs
+    ]
+    similarity = float(np.mean(scores)) if scores else 0.0
+    print(
+        f"[cross] {author_a} vs {author_b}: {similarity:.4f} "
+        f"across {len(pairs)} essay pairs"
+    )
+    return similarity
 
 
 def build_similarity_matrix(
@@ -267,7 +300,7 @@ def build_similarity_matrix(
 
     print(f"[matrix] {n} authors: {authors}")
 
-    # Diagonal: LOO self-similarity per author.
+    # Diagonal: mean of all within-author essay pairs.
     for author in authors:
         indices = grouped[author]
         info = compute_self_similarity(
@@ -277,7 +310,7 @@ def build_similarity_matrix(
         matrix.loc[author, author] = info["mean"]
         self_info[author] = info
 
-    # Off-diagonal: concat-vs-concat, computed once per unordered pair then mirrored.
+    # Off-diagonal: mean of all cross-author essay pairs.
     for i, a in enumerate(authors):
         for j, b in enumerate(authors):
             if j <= i:
@@ -305,7 +338,7 @@ def plot_self_similarity_bars(
     authors = list(self_info.keys())
     means = [self_info[a]["mean"] for a in authors]
     stds = [self_info[a]["std"] for a in authors]
-    n_perms = [self_info[a]["n_permutations"] for a in authors]
+    n_pairs = [self_info[a]["n_pairs"] for a in authors]
 
     fig, ax = plt.subplots(figsize=(8, 5))
     cmap = plt.get_cmap("tab10")
@@ -318,7 +351,7 @@ def plot_self_similarity_bars(
         edgecolor="black",
         alpha=0.85,
     )
-    for bar, m, n in zip(bars, means, n_perms):
+    for bar, m, n in zip(bars, means, n_pairs):
         ax.text(
             bar.get_x() + bar.get_width() / 2.0,
             bar.get_height() + 0.01,
@@ -331,8 +364,8 @@ def plot_self_similarity_bars(
     ax.set_xticks(range(len(authors)))
     ax.set_xticklabels(authors, rotation=20, ha="right")
     ax.set_ylim(0.0, 1.05)
-    ax.set_ylabel("LOO self-similarity (mean +/- std)")
-    ax.set_title("Author Self-Similarity (Leave-One-Out)")
+    ax.set_ylabel("Within-author essay-pair similarity (mean +/- std)")
+    ax.set_title("Author Self-Similarity (Essay-Pair Average)")
     ax.axhline(
         float(np.mean(means)),
         color="red",
@@ -364,7 +397,7 @@ def plot_similarity_heatmap(
     ax.set_ylabel("Author")
     ax.set_title(
         "Author-Author Similarity Matrix\n"
-        "(diagonal = LOO self-similarity, off-diagonal = concat vs concat)"
+        "(each cell = mean essay-pair similarity)"
     )
 
     for i in range(data.shape[0]):
@@ -488,7 +521,7 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
     bad = [a for a, idx in grouped.items() if len(idx) < 2]
     if bad:
         raise SystemExit(
-            f"authors with <2 essays cannot run LOO: {bad}; "
+            f"authors with <2 essays cannot run pairwise comparison: {bad}; "
             "need at least 2 essays per author."
         )
 
@@ -526,6 +559,7 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
     matrix_path = os.path.join(out_dir, MATRIX_JSON_FILENAME)
     payload = {
         "method": args.method,
+        "comparison_unit": "mean_essay_pairs",
         "authors": list(matrix.index),
         "matrix": matrix.round(6).to_dict(orient="index"),
         "self_info": self_info,
@@ -546,16 +580,16 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
     print(f"[plot] saved {heat_path}")
 
     # Console summary.
-    print("\n=== Self-similarity (LOO) ===")
-    header = f"{'author':<20} {'mean':>8} {'std':>8} {'n_perms':>8}  per_permutation"
+    print("\n=== Within-author essay-pair similarity ===")
+    header = f"{'author':<20} {'mean':>8} {'std':>8} {'n_pairs':>8}  pair_scores"
     print(header)
     print("-" * len(header))
     for author in sorted(self_info):
         info = self_info[author]
-        perms = ", ".join(f"{x:.3f}" for x in info["per_permutation"])
+        pair_scores = ", ".join(f"{pair['similarity']:.3f}" for pair in info["pairs"])
         print(
             f"{author:<20} {info['mean']:>8.4f} {info['std']:>8.4f} "
-            f"{info['n_permutations']:>8d}  [{perms}]"
+            f"{info['n_pairs']:>8d}  [{pair_scores}]"
         )
 
     print("\n=== Similarity matrix ===")
@@ -577,10 +611,15 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
     diag = np.diag(matrix.astype(float).values)
     mask = ~np.eye(len(matrix), dtype=bool)
     off = matrix.astype(float).values[mask]
+    row_wins = sum(
+        diag[i] > np.delete(matrix.astype(float).values[i], i).max()
+        for i in range(len(matrix))
+    )
     print(
         f"\n[validation] diagonal mean = {diag.mean():.4f}  "
         f"off-diagonal mean = {off.mean():.4f}  "
-        f"gap = {diag.mean() - off.mean():+.4f}"
+        f"gap = {diag.mean() - off.mean():+.4f}  "
+        f"row wins = {row_wins}/{len(matrix)}"
     )
 
     _persist()
@@ -604,7 +643,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_sim = sub.add_parser(
         "author-similarity",
-        help="LOO self-similarity + concat-vs-concat cross similarity matrix.",
+        help="Pair-averaged within-author and cross-author similarity matrix.",
     )
     p_sim.add_argument(
         "--method",

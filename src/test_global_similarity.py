@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from itertools import combinations, product
 
 import numpy as np
 
@@ -50,6 +51,7 @@ def _make_metrics(
         "pos_NN": [int(v) for v in rng.integers(0, 8, size=n_sentences)],
         "pos_VB": [int(v) for v in rng.integers(0, 5, size=n_sentences)],
         "pos_JJ": [int(v) for v in rng.integers(0, 4, size=n_sentences)],
+        "pos_PRP$": [int(v) for v in rng.integers(0, 3, size=n_sentences)],
     }
 
 
@@ -96,6 +98,36 @@ def test_sparse_metric_does_not_dominate_simple() -> None:
         f"pos_NN with 2 combined nonzeros should be well below 1.0 weight, got "
         f"{info['weight']}"
     )
+
+
+def test_metric_arrays_share_sentence_alignment() -> None:
+    from analysis import get_all_metrics
+
+    text = "The cat sleeps. Birds fly quickly. However, they return."
+    metrics = get_all_metrics(text)
+    n_sentences = len(metrics["sentence_lengths"])
+    assert n_sentences == 3
+    for name, values in metrics.items():
+        if name == "word_lengths":
+            continue
+        assert len(values) == n_sentences, (
+            f"{name} has {len(values)} values for {n_sentences} sentences"
+        )
+    pos_metrics = {
+        name: values for name, values in metrics.items() if name.startswith("pos_")
+    }
+    assert pos_metrics
+    assert any(0 in values for values in pos_metrics.values())
+    assert metrics["anadiplosis_counts"][0] == 0
+
+
+def test_missing_metric_uses_own_sentence_count() -> None:
+    from analysis import _normalize_metric_array
+
+    a, b, skip = _normalize_metric_array(None, [0, 1], 3, 2)
+    assert skip is None
+    assert a.tolist() == [0.0, 0.0, 0.0]
+    assert b.tolist() == [0.0, 1.0]
 
 
 def test_manova_returns_valid_scores_for_aligned_metrics() -> None:
@@ -177,6 +209,56 @@ def test_weighted_can_change_simple_similarity() -> None:
           f"tuned sim={tuned['similarity']:.4f}")
 
 
+def test_author_matrix_averages_comparable_essay_pairs() -> None:
+    import test as matrix_test
+
+    essays = [
+        {"author": "By Alice", "body": "alice-0"},
+        {"author": "By Alice", "body": "alice-1"},
+        {"author": "By Alice", "body": "alice-2"},
+        {"author": "By Bob", "body": "bob-0"},
+        {"author": "By Bob", "body": "bob-1"},
+    ]
+    distributions = [
+        [1, 1, 2, 2],
+        [1, 1, 2, 3],
+        [1, 2, 2, 3],
+        [8, 8, 9, 9],
+        [8, 9, 9, 10],
+    ]
+    cache = {
+        matrix_test._text_fingerprint(essay["body"]): {
+            "sentence_lengths": distribution
+        }
+        for essay, distribution in zip(essays, distributions)
+    }
+    grouped = matrix_test.group_by_author(essays)
+    matrix = matrix_test.build_similarity_matrix(
+        grouped,
+        essays,
+        cache,
+        "simple",
+    )
+    self_info = matrix.attrs["self_info"]
+    assert self_info["Alice"]["n_pairs"] == 3
+    assert self_info["Bob"]["n_pairs"] == 1
+
+    alice_pairs = list(combinations(grouped["Alice"], 2))
+    cross_pairs = list(product(grouped["Alice"], grouped["Bob"]))
+
+    def pair_similarity(i: int, j: int) -> float:
+        return global_similarity(
+            {"sentence_lengths": distributions[i]},
+            {"sentence_lengths": distributions[j]},
+            method="simple",
+        )["similarity"]
+
+    expected_self = float(np.mean([pair_similarity(i, j) for i, j in alice_pairs]))
+    expected_cross = float(np.mean([pair_similarity(i, j) for i, j in cross_pairs]))
+    assert _is_close(matrix.loc["Alice", "Alice"], expected_self)
+    assert _is_close(matrix.loc["Alice", "Bob"], expected_cross)
+
+
 def test_tune_compute_metric_weights_prefers_discriminant() -> None:
     """End-to-end: same-author pairs agree on noise, diff pairs disagree."""
     from tune import compute_metric_weights
@@ -184,7 +266,7 @@ def test_tune_compute_metric_weights_prefers_discriminant() -> None:
     n_sentences = 60
 
     def author_metrics(
-        seed: int, marker_bias: float, distractor_bias: float
+        seed: int, marker_bias: float, distractor_bias: float, anti_bias: float
     ) -> dict[str, list]:
         a_rng = np.random.default_rng(seed)
         return {
@@ -192,6 +274,8 @@ def test_tune_compute_metric_weights_prefers_discriminant() -> None:
                                    size=n_sentences).tolist(),
             "distractor": a_rng.normal(loc=distractor_bias, scale=0.1,
                                        size=n_sentences).tolist(),
+            "anti_signal": a_rng.normal(loc=anti_bias, scale=0.1,
+                                        size=n_sentences).tolist(),
         }
 
     essays = [
@@ -201,10 +285,18 @@ def test_tune_compute_metric_weights_prefers_discriminant() -> None:
         {"author": "By Bob", "body": ""},
     ]
     metrics_lookup = {
-        0: author_metrics(101, marker_bias=0.0, distractor_bias=1.0),
-        1: author_metrics(102, marker_bias=0.05, distractor_bias=1.05),
-        2: author_metrics(201, marker_bias=2.0, distractor_bias=2.0),
-        3: author_metrics(202, marker_bias=2.05, distractor_bias=2.2),
+        0: author_metrics(
+            101, marker_bias=0.0, distractor_bias=1.0, anti_bias=0.0
+        ),
+        1: author_metrics(
+            102, marker_bias=0.05, distractor_bias=1.05, anti_bias=10.0
+        ),
+        2: author_metrics(
+            201, marker_bias=2.0, distractor_bias=2.0, anti_bias=0.0
+        ),
+        3: author_metrics(
+            202, marker_bias=2.05, distractor_bias=2.2, anti_bias=10.0
+        ),
     }
 
     payload = compute_metric_weights(essays, metrics_lookup=metrics_lookup)
@@ -213,12 +305,15 @@ def test_tune_compute_metric_weights_prefers_discriminant() -> None:
     weights = payload["metric_weights"]
     assert "marker" in weights, weights
     assert "distractor" in weights, weights
+    assert "anti_signal" in weights, weights
+    assert payload["weight_power"] > 1.0, payload
     assert weights["marker"] > 1.0, weights
     assert weights["marker"] > weights["distractor"], weights
+    assert weights["anti_signal"] < 1.0, weights
     assert payload["stats"]["marker"]["sep"] > payload["stats"]["distractor"]["sep"], \
         payload["stats"]  # the higher-sep metric should win
     stats_marker = payload["stats"]["marker"]
-    assert stats_marker["d_D_mean"] > stats_marker["d_S_mean"], stats_marker
+    assert stats_marker["ks_D_mean"] > stats_marker["ks_S_mean"], stats_marker
 
 
 def test_load_metric_weights_handles_missing_and_malformed(tmp_metrics_path=None) -> None:
@@ -251,6 +346,12 @@ if __name__ == "__main__":
     test_sparse_metric_does_not_dominate_simple()
     print("[ok] sparse metric downweighted (simple)")
 
+    test_metric_arrays_share_sentence_alignment()
+    print("[ok] sentence-level metric arrays stay aligned")
+
+    test_missing_metric_uses_own_sentence_count()
+    print("[ok] missing metrics use the correct sentence count")
+
     test_manova_returns_valid_scores_for_aligned_metrics()
     print("[ok] MANOVA returns a valid 0-1 score")
 
@@ -265,6 +366,9 @@ if __name__ == "__main__":
 
     test_weighted_can_change_simple_similarity()
     print("[ok] weighted simple similarity reports tuned weights")
+
+    test_author_matrix_averages_comparable_essay_pairs()
+    print("[ok] author matrix averages comparable essay pairs")
 
     test_tune_compute_metric_weights_prefers_discriminant()
     print("[ok] tune.compute_metric_weights upweights discriminant metrics")

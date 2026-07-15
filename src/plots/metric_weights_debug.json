@@ -1,0 +1,438 @@
+{
+  "schema_version": 2,
+  "method": "cohens_d_pair_ratio_power",
+  "weight_power": 3.0,
+  "anchor": {
+    "powered_separation_mean": 3.736581788839162
+  },
+  "n_same_pairs": 18,
+  "n_diff_pairs": 102,
+  "stats": {
+    "anadiplosis_counts": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.19669892764702837,
+      "d_D_mean": 0.20919049367205825,
+      "sep": 1.063505697101453
+    },
+    "cleft_counts": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 101,
+      "d_S_mean": 0.14686361201436465,
+      "d_D_mean": 0.15147052013457246,
+      "sep": 1.031368401529956
+    },
+    "conjunctions_per_series": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.22701161583197604,
+      "d_D_mean": 0.2166609288737925,
+      "sep": 0.9544047941113343
+    },
+    "connective_additive": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.20580040764490656,
+      "d_D_mean": 0.17447024903009992,
+      "sep": 0.8477650907574731
+    },
+    "connective_adversative": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.1330816499839115,
+      "d_D_mean": 0.16298768357459514,
+      "sep": 1.224717749415863
+    },
+    "connective_causal": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.11929138957657054,
+      "d_D_mean": 0.1540706454173345,
+      "sep": 1.2915463087311208
+    },
+    "connective_temporal": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.12396352961564022,
+      "d_D_mean": 0.21696039067110692,
+      "sep": 1.750189278689713
+    },
+    "cttr_per_sentence": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.20845252729691144,
+      "d_D_mean": 0.4039014733721327,
+      "sep": 1.9376140025533506
+    },
+    "dep_adjectival_modifier": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.17923014274857682,
+      "d_D_mean": 0.36210014685686376,
+      "sep": 2.020302617636125
+    },
+    "dep_adverbial_modifier": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.12452074031446607,
+      "d_D_mean": 0.2764931143417829,
+      "sep": 2.220448522832456
+    },
+    "dep_conjunct": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.15677987699522303,
+      "d_D_mean": 0.16019441798271536,
+      "sep": 1.0217790654889396
+    },
+    "dep_determiner": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.1735615039717472,
+      "d_D_mean": 0.41943065926803724,
+      "sep": 2.41660295092489
+    },
+    "dep_direct_object": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.20813346010339326,
+      "d_D_mean": 0.36385711424265405,
+      "sep": 1.7481877535411636
+    },
+    "dep_nominal_subject": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.2024499129522442,
+      "d_D_mean": 0.3260197807565831,
+      "sep": 1.6103695261353923
+    },
+    "dep_object_of_preposition": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.1376816261322158,
+      "d_D_mean": 0.381772785866977,
+      "sep": 2.7728537477224027
+    },
+    "existential_extraposition_counts": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.16089334172445927,
+      "d_D_mean": 0.16154182811246443,
+      "sep": 1.004030510837452
+    },
+    "normalization_counts": {
+      "n_same_pairs": 17,
+      "n_diff_pairs": 97,
+      "d_S_mean": 0.16309655469270595,
+      "d_D_mean": 0.17652148511236307,
+      "sep": 1.0823122728292964
+    },
+    "pos_CC": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.18246303418493656,
+      "d_D_mean": 0.16690842509259787,
+      "sep": 0.9147524652635198
+    },
+    "pos_CD": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.30655853382024234,
+      "d_D_mean": 0.34965471142162646,
+      "sep": 1.1405801250554304
+    },
+    "pos_DT": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.17549945347556892,
+      "d_D_mean": 0.3682470554735019,
+      "sep": 2.098274096623716
+    },
+    "pos_EX": {
+      "n_same_pairs": 2,
+      "n_diff_pairs": 8,
+      "d_S_mean": 0.36386932610332046,
+      "d_D_mean": 0.3608199725942921,
+      "sep": 0.9916196697277192
+    },
+    "pos_FW": {
+      "n_same_pairs": 6,
+      "n_diff_pairs": 12,
+      "d_S_mean": 0.8532150674785958,
+      "d_D_mean": 0.6022585801345253,
+      "sep": 0.7058699467701174
+    },
+    "pos_IN": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.172934402236835,
+      "d_D_mean": 0.34643332787217923,
+      "sep": 2.0032585774296083
+    },
+    "pos_JJ": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.1770219584824039,
+      "d_D_mean": 0.3189061798645288,
+      "sep": 1.8015018085703736
+    },
+    "pos_JJR": {
+      "n_same_pairs": 10,
+      "n_diff_pairs": 65,
+      "d_S_mean": 0.354485620926316,
+      "d_D_mean": 0.4344341374720565,
+      "sep": 1.2255332411046302
+    },
+    "pos_JJS": {
+      "n_same_pairs": 12,
+      "n_diff_pairs": 72,
+      "d_S_mean": 0.6346811016724293,
+      "d_D_mean": 0.7618848186696082,
+      "sep": 1.2004211504657036
+    },
+    "pos_MD": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.23681867171943793,
+      "d_D_mean": 0.3509708833494422,
+      "sep": 1.4820216614658652
+    },
+    "pos_NN": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.23755275769599027,
+      "d_D_mean": 0.3599313578848923,
+      "sep": 1.515161710662208
+    },
+    "pos_NNP": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.27550631584546453,
+      "d_D_mean": 0.3115775246325729,
+      "sep": 1.1309265007225475
+    },
+    "pos_NNPS": {
+      "n_same_pairs": 6,
+      "n_diff_pairs": 28,
+      "d_S_mean": 0.6453796142312834,
+      "d_D_mean": 0.9895370106029807,
+      "sep": 1.533262680630135
+    },
+    "pos_NNS": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.25515351846740236,
+      "d_D_mean": 0.36241740361510794,
+      "sep": 1.4203879507679942
+    },
+    "pos_PRP": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.20321356061175208,
+      "d_D_mean": 0.2665867388700519,
+      "sep": 1.3118535309060668
+    },
+    "pos_PRP$": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.28883316560152156,
+      "d_D_mean": 0.30305950803346304,
+      "sep": 1.0492543615895091
+    },
+    "pos_RB": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.2119766522750003,
+      "d_D_mean": 0.296096005500363,
+      "sep": 1.3968312334935855
+    },
+    "pos_RBR": {
+      "n_same_pairs": 4,
+      "n_diff_pairs": 19,
+      "d_S_mean": 0.8470228856828803,
+      "d_D_mean": 0.8084969042591053,
+      "sep": 0.9545160625633184
+    },
+    "pos_RP": {
+      "n_same_pairs": 15,
+      "n_diff_pairs": 84,
+      "d_S_mean": 0.7953567793899107,
+      "d_D_mean": 0.657939396997406,
+      "sep": 0.8272257014976173
+    },
+    "pos_TO": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.19485769443714174,
+      "d_D_mean": 0.3968866682418616,
+      "sep": 2.036797328383472
+    },
+    "pos_VB": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.23701149144444825,
+      "d_D_mean": 0.32387867651874397,
+      "sep": 1.3665088896576403
+    },
+    "pos_VBD": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.2407196811894266,
+      "d_D_mean": 0.3846746797177564,
+      "sep": 1.5980167462846677
+    },
+    "pos_VBG": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.23111625394564397,
+      "d_D_mean": 0.3386625916949557,
+      "sep": 1.4653323623108006
+    },
+    "pos_VBN": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.227702538239137,
+      "d_D_mean": 0.36641631030801847,
+      "sep": 1.6091858437579594
+    },
+    "pos_VBP": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.1893864829513919,
+      "d_D_mean": 0.20198530658923491,
+      "sep": 1.0665240566140088
+    },
+    "pos_VBZ": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.2706399704540661,
+      "d_D_mean": 0.3030072168674348,
+      "sep": 1.119594776648431
+    },
+    "pos_WDT": {
+      "n_same_pairs": 17,
+      "n_diff_pairs": 100,
+      "d_S_mean": 0.41244695916654167,
+      "d_D_mean": 0.36957110668221693,
+      "sep": 0.8960454245646734
+    },
+    "pos_WP": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 101,
+      "d_S_mean": 0.35359373917375714,
+      "d_D_mean": 0.3830018785580491,
+      "sep": 1.0831690523818591
+    },
+    "pos_WP$": {
+      "n_same_pairs": 1,
+      "n_diff_pairs": 12,
+      "d_S_mean": 1.2126781251816647,
+      "d_D_mean": 0.723606797749979,
+      "sep": 0.5967017842758524
+    },
+    "pos_WRB": {
+      "n_same_pairs": 14,
+      "n_diff_pairs": 85,
+      "d_S_mean": 0.3577870238055133,
+      "d_D_mean": 0.3880874099781765,
+      "sep": 1.084688095063612
+    },
+    "segments_per_sentence": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.15677987699522308,
+      "d_D_mean": 0.16019441798271536,
+      "sep": 1.0217790654889392
+    },
+    "sentence_lengths": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.18979588705730188,
+      "d_D_mean": 0.42264093746330245,
+      "sep": 2.2268117460519883
+    },
+    "tricolon_counts": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.16514655203530282,
+      "d_D_mean": 0.2140782723674029,
+      "sep": 1.2962909212341227
+    },
+    "ttr_per_sentence": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.24934735356445595,
+      "d_D_mean": 0.23437002599580248,
+      "sep": 0.9399341228664585
+    },
+    "word_lengths": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.04984441033547852,
+      "d_D_mean": 0.08188539186031764,
+      "sep": 1.6428070570427882
+    },
+    "words_per_sentence": {
+      "n_same_pairs": 18,
+      "n_diff_pairs": 102,
+      "d_S_mean": 0.18607669429158832,
+      "d_D_mean": 0.3955352789062798,
+      "sep": 2.1256512254846878
+    }
+  },
+  "metric_weights": {
+    "anadiplosis_counts": 0.32191778389217934,
+    "cleft_counts": 0.29360738295196626,
+    "conjunctions_per_series": 0.2326608678599485,
+    "connective_additive": 0.16306174848441232,
+    "connective_adversative": 0.49162452870329526,
+    "connective_causal": 0.5765745314753554,
+    "connective_temporal": 1.4347643084035815,
+    "cttr_per_sentence": 1.9468267284660943,
+    "dep_adjectival_modifier": 2.2068600191289,
+    "dep_adverbial_modifier": 2.929865170456807,
+    "dep_conjunct": 0.28549368654201107,
+    "dep_determiner": 3.776951530493386,
+    "dep_direct_object": 1.4298475247915983,
+    "dep_nominal_subject": 1.1176405179047098,
+    "dep_object_of_preposition": 5.70566669388272,
+    "existential_extraposition_counts": 0.27087332493673266,
+    "normalization_counts": 0.339299528846449,
+    "pos_CC": 0.20485014369483137,
+    "pos_CD": 0.39710276038317244,
+    "pos_DT": 2.472362598046671,
+    "pos_EX": 0.2609521657874493,
+    "pos_FW": 0.1,
+    "pos_IN": 2.1514761694041877,
+    "pos_JJ": 1.5646947109443878,
+    "pos_JJR": 0.4926072434488842,
+    "pos_JJS": 0.4629418292882361,
+    "pos_MD": 0.8711424186139596,
+    "pos_NN": 0.9308987940023488,
+    "pos_NNP": 0.38710488324429443,
+    "pos_NNPS": 0.9646620699428722,
+    "pos_NNS": 0.7669136111400636,
+    "pos_PRP": 0.6042011573497319,
+    "pos_PRP$": 0.3091490076089113,
+    "pos_RB": 0.7293858257849248,
+    "pos_RBR": 0.2327422510413494,
+    "pos_RP": 0.15149474380195035,
+    "pos_TO": 2.261356101257041,
+    "pos_VB": 0.6829090860896783,
+    "pos_VBD": 1.0921178001969374,
+    "pos_VBG": 0.8420423427712695,
+    "pos_VBN": 1.1151778050969046,
+    "pos_VBP": 0.3246664967121236,
+    "pos_VBZ": 0.37558487796004336,
+    "pos_WDT": 0.19253761456454896,
+    "pos_WP": 0.34010595531194837,
+    "pos_WP$": 0.1,
+    "pos_WRB": 0.34153886275872825,
+    "segments_per_sentence": 0.28549368654201074,
+    "sentence_lengths": 2.95512609947494,
+    "tricolon_counts": 0.5829521996470393,
+    "ttr_per_sentence": 0.22223771137907597,
+    "word_lengths": 1.1865476582658472,
+    "words_per_sentence": 2.570404835725853
+  }
+}

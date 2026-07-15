@@ -503,6 +503,7 @@ def plot_all_features_overlap(
             ax.hist(
                 a_vals,
                 bins=bins,
+                density=True,
                 alpha=0.55,
                 label=label_a,
                 color="steelblue",
@@ -512,6 +513,7 @@ def plot_all_features_overlap(
             ax.hist(
                 b_vals,
                 bins=bins,
+                density=True,
                 alpha=0.55,
                 label=label_b,
                 color="darkorange",
@@ -626,9 +628,9 @@ def _normalize_metric_array(
     if a_empty and b_empty:
         return None, None, "empty"
     if a_empty:
-        return np.zeros(n_b, dtype=float), np.asarray(values_b, dtype=float), None
+        return np.zeros(n_a, dtype=float), np.asarray(values_b, dtype=float), None
     if b_empty:
-        return np.asarray(values_a, dtype=float), np.zeros(n_a, dtype=float), None
+        return np.asarray(values_a, dtype=float), np.zeros(n_b, dtype=float), None
     a = np.asarray(values_a, dtype=float)
     b = np.asarray(values_b, dtype=float)
     if a.size < 2 or b.size < 2:
@@ -856,9 +858,10 @@ def _global_manova(
         }
 
     X_final = np.column_stack(kept_cols)
-    df = pd.DataFrame(X_final, columns=kept_names)
+    formula_names = [f"feature_{i}" for i in range(len(kept_names))]
+    df = pd.DataFrame(X_final, columns=formula_names)
     df["group"] = ["A"] * n_a + ["B"] * n_b
-    formula = " + ".join(kept_names) + " ~ group"
+    formula = " + ".join(formula_names) + " ~ group"
 
     try:
         result = MANOVA.from_formula(formula, data=df).mv_test()
@@ -902,7 +905,7 @@ def _global_manova(
 
 
 DEFAULT_METRIC_WEIGHTS_FILENAME = "metric_weights.json"
-METRIC_WEIGHTS_SCHEMA_VERSION = 1
+METRIC_WEIGHTS_SCHEMA_VERSION = 3
 
 
 def load_metric_weights(path: str | None) -> dict[str, float] | None:

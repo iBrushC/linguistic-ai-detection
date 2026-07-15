@@ -74,26 +74,22 @@ def get_words_per_sentence(text: str) -> list[int]:
 
 def get_word_types_per_sentence(text: str) -> dict:
     sentences = nltk.tokenize.sent_tokenize(text)
-    type_counts = {}
+    sentence_counts = []
+    all_tags = set()
 
     for s in sentences:
         tokenizer = nltk.tokenize.RegexpTokenizer(r'\w+')
         words = tokenizer.tokenize(s)
-        tag_pairs = nltk.pos_tag(words)
-        sentence_type_counts = {}
-        for (word, pos_tag) in tag_pairs:
-            if (pos_tag in sentence_type_counts.keys()):
-                sentence_type_counts[pos_tag] += 1
-            else:
-                sentence_type_counts[pos_tag] = 1
+        counts = {}
+        for _, pos_tag in nltk.pos_tag(words):
+            counts[pos_tag] = counts.get(pos_tag, 0) + 1
+        sentence_counts.append(counts)
+        all_tags.update(counts)
 
-        for key in sentence_type_counts.keys():
-            if (key in list(type_counts.keys())):
-                type_counts[key].append(sentence_type_counts[key])
-            else:
-                type_counts[key] = [sentence_type_counts[key]]
-
-    return type_counts
+    return {
+        tag: [counts.get(tag, 0) for counts in sentence_counts]
+        for tag in sorted(all_tags)
+    }
 
 def get_word_lengths(text: str) -> list[int]:
     tokenizer = nltk.tokenize.RegexpTokenizer(r'\w+')
@@ -142,13 +138,16 @@ _SYNTACTIC_DEPS = {
 
 def get_syntactic_markers(text: str) -> dict:
     nlp = _get_nlp()
-    doc = nlp(text)
-    counts = {key: [0] * len(list(doc.sents)) for key in _SYNTACTIC_DEPS}
-    for i, sent in enumerate(doc.sents):
-        for tok in sent:
+    sentences = nltk.tokenize.sent_tokenize(text)
+    counts = {key: [] for key in _SYNTACTIC_DEPS}
+    for doc in nlp.pipe(sentences):
+        sentence_counts = {key: 0 for key in _SYNTACTIC_DEPS}
+        for tok in doc:
             for key, dep in _SYNTACTIC_DEPS.items():
                 if tok.dep_ == dep:
-                    counts[key][i] += 1
+                    sentence_counts[key] += 1
+        for key in _SYNTACTIC_DEPS:
+            counts[key].append(sentence_counts[key])
     return counts
 
 # --- Structural markers ---
@@ -209,7 +208,7 @@ def get_anadiplosis_counts(text: str) -> list[int]:
         words = tokenizer.tokenize(s)
         tail = [w.lower() for w in words[-3:]] if words else []
         last_words.append(tail)
-    out = []
+    out = [0]
     for i in range(1, len(sentences)):
         prev_tail = last_words[i - 1]
         curr_words = [w.lower() for w in tokenizer.tokenize(sentences[i])]
@@ -218,7 +217,6 @@ def get_anadiplosis_counts(text: str) -> list[int]:
             continue
         match = 1 if any(w in curr_words[:3] for w in prev_tail) else 0
         out.append(match)
-    out.append(0)
     return out
 
 def get_conjunctions_per_series(text: str) -> list[int]:
@@ -257,9 +255,9 @@ def get_connective_density(text: str) -> dict:
 
 def get_segments_per_sentence(text: str) -> list[int]:
     nlp = _get_nlp()
-    doc = nlp(text)
+    sentences = nltk.tokenize.sent_tokenize(text)
     out = []
-    for sent in doc.sents:
-        n_clauses = sum(1 for tok in sent if tok.dep_ in ("ROOT", "conj"))
+    for doc in nlp.pipe(sentences):
+        n_clauses = sum(1 for tok in doc if tok.dep_ in ("ROOT", "conj"))
         out.append(max(1, n_clauses))
     return out
