@@ -11,6 +11,17 @@ The basis is linguistic stylometry, something which has long been used for autho
 
 What we are exactly testing in this package is if it could be viable for isolating an author from an AI, even if that AI is trying its very best to copy the author. 
 
+### Metrics
+Each text is reduced to a set of per-sentence distributions across four families of stylometric markers, then compared.
+
+**Lexical**: coarse text statistics: sentence length, words per sentence, word length, type/token ratio (TTR), and corrected TTR (CTTR).
+
+**Morphological**: per-sentence POS-tag counts from NLTK: adjective, adposition, adverb, auxiliary, coordinating conjunction, subordinating conjunction, noun, particle, pronoun, verb.
+
+**Syntactical**: per-sentence spaCy dependency counts: adverbial modifier, adjectival modifier, conjunct, determiner, direct object, nominal subject, object of preposition, root.
+
+**Structural**: counts of rhetorical/grammatical constructions per sentence: tricolon, clefts, normalization ("there is…"), existential/extraposition ("it is that…"), anadiplosis, conjunctions per coordinated series, segments per sentence (clause count), and connective density split into additive, adversative, causal, and temporal. 
+
 ### The Tests
 There are three tests to push the stylometry-based detection as far as possible
 
@@ -21,7 +32,7 @@ There are three tests to push the stylometry-based detection as far as possible
 ### Texts Used
 For the ground truth author-attribution, public domain essays are used, all from before 2023. The authors of the essays used are Ross Bullen, Frank Delaney, Erica X Eisen, Matthew Green, Christine Jones. Ross Bullen has four essays while the others have three essays each.
 
-## AIs Tested
+### AIs Tested
 We test the most popular LLMs, two closed and two open:
 * ChatGPT 5.6
 * Claude Opus 4.8
