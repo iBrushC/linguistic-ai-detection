@@ -9,8 +9,10 @@ sys.path.insert(0, os.path.dirname(__file__))
 from analysis import (
     compare_metrics,
     get_all_metrics,
+    global_similarity,
     plot_distribution,
     print_comparison,
+    print_global_similarity,
 )
 
 
@@ -47,6 +49,14 @@ def main() -> None:
     print(f"\n=== {label_a} vs {label_b} ===\n")
     results = compare_metrics(metrics_a, metrics_b, label_a, label_b)
     print_comparison(results, label_a, label_b)
+
+    print("\n--- global similarity (simple) ---")
+    simple_result = global_similarity(metrics_a, metrics_b, method="simple")
+    print_global_similarity(simple_result, label_a, label_b)
+
+    print("\n--- global similarity (manova) ---")
+    manova_result = global_similarity(metrics_a, metrics_b, method="manova")
+    print_global_similarity(manova_result, label_a, label_b)
 
     out_dir = os.path.join(os.path.dirname(__file__), "plots")
     plot_path = os.path.join(out_dir, "words_per_sentence_distribution.png")

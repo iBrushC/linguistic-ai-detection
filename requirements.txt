@@ -6,3 +6,4 @@ spacy >= 3.7.0
 npm >= 2.0.2
 pandas >= 2.2.2
 matplotlib >= 3.10.0
+statsmodels >= 0.14.0
