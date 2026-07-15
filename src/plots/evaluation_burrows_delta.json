@@ -1,0 +1,24 @@
+{
+  "metric": "burrows_delta",
+  "feature_space": "mfw",
+  "n_chunks": 125,
+  "n_authors": 5,
+  "n_pairs": 7747,
+  "n_self_pairs": 1534,
+  "n_cross_pairs": 6213,
+  "auc": 0.6225345308896202,
+  "perm": {
+    "observed_auc": 0.6225345308896202,
+    "n_permutations": 250,
+    "n_valid_permutations": 250,
+    "p_value": 0.00398406374501992,
+    "permuted_auc_mean": 0.5005901753954921,
+    "permuted_auc_std": 0.007275033512159699,
+    "permuted_auc_50": 0.5003155324261612,
+    "permuted_auc_95": 0.5125458454846475,
+    "permuted_auc_99": 0.516349618910294,
+    "observed_ge_count": 0
+  },
+  "plot_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances_overlap_burrows_delta.png",
+  "distance_matrix_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances\\burrows_delta.npy"
+}

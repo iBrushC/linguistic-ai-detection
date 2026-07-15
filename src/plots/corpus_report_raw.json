@@ -1,0 +1,117 @@
+{
+  "test": {
+    "per_author": {
+      "Catherine Bennett": {
+        "n_articles": 34,
+        "total_words": 36874,
+        "mean_words_per_article": 1084.5294117647059,
+        "min_words": 239,
+        "max_words": 2182
+      },
+      "George Monbiot": {
+        "n_articles": 22,
+        "total_words": 23973,
+        "mean_words_per_article": 1089.6818181818182,
+        "min_words": 725,
+        "max_words": 1266
+      },
+      "Hugo Young": {
+        "n_articles": 29,
+        "total_words": 32069,
+        "mean_words_per_article": 1105.8275862068965,
+        "min_words": 458,
+        "max_words": 1212
+      },
+      "Jonathan Freedland": {
+        "n_articles": 30,
+        "total_words": 33650,
+        "mean_words_per_article": 1121.6666666666667,
+        "min_words": 406,
+        "max_words": 2302
+      },
+      "Martin Kettle": {
+        "n_articles": 20,
+        "total_words": 21778,
+        "mean_words_per_article": 1088.9,
+        "min_words": 359,
+        "max_words": 1314
+      }
+    },
+    "by_config_split": {
+      "cross_topic_1": {
+        "train": 40,
+        "validation": 14,
+        "test": 81
+      }
+    }
+  },
+  "reference": {
+    "per_author": {
+      "Catherine Bennett": {
+        "n_articles": 132,
+        "total_words": 140727,
+        "mean_words_per_article": 1066.1136363636363,
+        "min_words": 239,
+        "max_words": 2182
+      },
+      "George Monbiot": {
+        "n_articles": 66,
+        "total_words": 71919,
+        "mean_words_per_article": 1089.6818181818182,
+        "min_words": 725,
+        "max_words": 1266
+      },
+      "Hugo Young": {
+        "n_articles": 96,
+        "total_words": 105015,
+        "mean_words_per_article": 1093.90625,
+        "min_words": 458,
+        "max_words": 1212
+      },
+      "Jonathan Freedland": {
+        "n_articles": 96,
+        "total_words": 109245,
+        "mean_words_per_article": 1137.96875,
+        "min_words": 406,
+        "max_words": 2302
+      },
+      "Martin Kettle": {
+        "n_articles": 66,
+        "total_words": 72966,
+        "mean_words_per_article": 1105.5454545454545,
+        "min_words": 359,
+        "max_words": 1538
+      }
+    },
+    "by_config_split": {
+      "cross_genre_2": {
+        "train": 17,
+        "validation": 14,
+        "test": 121
+      },
+      "cross_genre_3": {
+        "train": 17,
+        "validation": 31,
+        "test": 104
+      },
+      "cross_genre_4": {
+        "train": 17,
+        "validation": 50,
+        "test": 85
+      }
+    }
+  },
+  "target_authors": {
+    "0": "Catherine Bennett",
+    "1": "George Monbiot",
+    "2": "Hugo Young",
+    "3": "Jonathan Freedland",
+    "4": "Martin Kettle"
+  },
+  "test_config": "cross_topic_1",
+  "reference_configs": [
+    "cross_genre_2",
+    "cross_genre_3",
+    "cross_genre_4"
+  ]
+}

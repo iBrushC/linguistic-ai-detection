@@ -1,0 +1,16 @@
+{
+  "chunk_size_tokens": 1000,
+  "min_chunk_fill_ratio": 0.8,
+  "min_chunks_per_author": 15,
+  "mfw_n": 500,
+  "reference_corpus_path": "reference_corpus.json",
+  "essays_path": "essays.json",
+  "features": ["mfw", "char_ngram"],
+  "distances": ["cosine_delta", "burrows_delta", "char_ngram_cosine"],
+  "permutations": 250,
+  "out_dir": "src/plots",
+  "exclude_same_source_document": true,
+  "topic_leakage_cv_folds": 5,
+  "topic_leakage_warning_gap": 0.05,
+  "perm_rng_seed": 1729
+}

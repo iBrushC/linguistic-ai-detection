@@ -1,0 +1,42 @@
+{
+  "warning": true,
+  "message": "[TOPIC LEAK WARNING] content-word classifier accuracy (0.656) is within 0.05 of the MFW classifier (0.656); the function-word signal may be tracking subject matter rather than style.",
+  "n_chunks": 125,
+  "per_author_chunk_counts": {
+    "Catherine Bennett": 29,
+    "George Monbiot": 22,
+    "Hugo Young": 27,
+    "Jonathan Freedland": 28,
+    "Martin Kettle": 19
+  },
+  "chance_accuracy": 0.2,
+  "cv_folds": 5,
+  "warning_gap": 0.05,
+  "content_only": {
+    "accuracy": 0.656,
+    "accuracy_std": 0.08294576541331086,
+    "per_fold": [
+      0.64,
+      0.72,
+      0.72,
+      0.68,
+      0.52
+    ],
+    "n_features": 5593,
+    "n_chunks": 125
+  },
+  "mfw": {
+    "accuracy": 0.656,
+    "accuracy_std": 0.07266360849833978,
+    "per_fold": [
+      0.6,
+      0.72,
+      0.72,
+      0.68,
+      0.56
+    ],
+    "n_features": 5989,
+    "n_chunks": 125
+  },
+  "accuracy_gap_mfw_minus_content": 0.0
+}

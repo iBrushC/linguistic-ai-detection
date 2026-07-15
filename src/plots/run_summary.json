@@ -1,0 +1,191 @@
+{
+  "per_metric": {
+    "cosine_delta": {
+      "metric": "cosine_delta",
+      "feature_space": "mfw",
+      "n_chunks": 125,
+      "n_authors": 5,
+      "n_pairs": 7747,
+      "n_self_pairs": 1534,
+      "n_cross_pairs": 6213,
+      "auc": 0.7204717114365282,
+      "perm": {
+        "observed_auc": 0.7204717114365282,
+        "n_permutations": 250,
+        "n_valid_permutations": 250,
+        "p_value": 0.00398406374501992,
+        "permuted_auc_mean": 0.49968560050510236,
+        "permuted_auc_std": 0.008301529892335796,
+        "permuted_auc_50": 0.49971796072613583,
+        "permuted_auc_95": 0.5126049727382199,
+        "permuted_auc_99": 0.518365654698856,
+        "observed_ge_count": 0
+      },
+      "plot_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances_overlap_cosine_delta.png",
+      "distance_matrix_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances\\cosine_delta.npy"
+    },
+    "burrows_delta": {
+      "metric": "burrows_delta",
+      "feature_space": "mfw",
+      "n_chunks": 125,
+      "n_authors": 5,
+      "n_pairs": 7747,
+      "n_self_pairs": 1534,
+      "n_cross_pairs": 6213,
+      "auc": 0.6225345308896202,
+      "perm": {
+        "observed_auc": 0.6225345308896202,
+        "n_permutations": 250,
+        "n_valid_permutations": 250,
+        "p_value": 0.00398406374501992,
+        "permuted_auc_mean": 0.5005901753954921,
+        "permuted_auc_std": 0.007275033512159699,
+        "permuted_auc_50": 0.5003155324261612,
+        "permuted_auc_95": 0.5125458454846475,
+        "permuted_auc_99": 0.516349618910294,
+        "observed_ge_count": 0
+      },
+      "plot_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances_overlap_burrows_delta.png",
+      "distance_matrix_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances\\burrows_delta.npy"
+    },
+    "char_ngram_cosine": {
+      "metric": "char_ngram_cosine",
+      "feature_space": "char_ngram",
+      "n_chunks": 125,
+      "n_authors": 5,
+      "n_pairs": 7747,
+      "n_self_pairs": 1534,
+      "n_cross_pairs": 6213,
+      "auc": 0.625589487156404,
+      "perm": {
+        "observed_auc": 0.625589487156404,
+        "n_permutations": 250,
+        "n_valid_permutations": 250,
+        "p_value": 0.00398406374501992,
+        "permuted_auc_mean": 0.5000488512510629,
+        "permuted_auc_std": 0.0072838255483063845,
+        "permuted_auc_50": 0.49935886481035996,
+        "permuted_auc_95": 0.5119834646329862,
+        "permuted_auc_99": 0.5168586070831992,
+        "observed_ge_count": 0
+      },
+      "plot_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances_overlap_char_ngram_cosine.png",
+      "distance_matrix_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances\\char_ngram_cosine.npy"
+    }
+  },
+  "config": {
+    "chunk_size_tokens": 1000,
+    "min_chunk_fill_ratio": 0.8,
+    "min_chunks_per_author": 15,
+    "mfw_n": 500,
+    "reference_corpus_path": "reference_corpus.json",
+    "essays_path": "essays.json",
+    "features": [
+      "mfw",
+      "char_ngram"
+    ],
+    "distances": [
+      "cosine_delta",
+      "burrows_delta",
+      "char_ngram_cosine"
+    ],
+    "permutations": 250,
+    "out_dir": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots",
+    "exclude_same_source_document": true,
+    "topic_leakage_cv_folds": 5,
+    "topic_leakage_warning_gap": 0.05,
+    "perm_rng_seed": 1729
+  },
+  "corpus": {
+    "n_chunks_total": 125,
+    "per_author": {
+      "Catherine Bennett": {
+        "n_chunks": 29,
+        "total_chunk_tokens": 28844,
+        "n_source_articles": 28,
+        "min_tokens": 856,
+        "max_tokens": 1000,
+        "mean_tokens_per_chunk": 994.6206896551724
+      },
+      "George Monbiot": {
+        "n_chunks": 22,
+        "total_chunk_tokens": 21329,
+        "n_source_articles": 22,
+        "min_tokens": 827,
+        "max_tokens": 1000,
+        "mean_tokens_per_chunk": 969.5
+      },
+      "Hugo Young": {
+        "n_chunks": 27,
+        "total_chunk_tokens": 26830,
+        "n_source_articles": 27,
+        "min_tokens": 830,
+        "max_tokens": 1000,
+        "mean_tokens_per_chunk": 993.7037037037037
+      },
+      "Jonathan Freedland": {
+        "n_chunks": 28,
+        "total_chunk_tokens": 27877,
+        "n_source_articles": 26,
+        "min_tokens": 919,
+        "max_tokens": 1000,
+        "mean_tokens_per_chunk": 995.6071428571429
+      },
+      "Martin Kettle": {
+        "n_chunks": 19,
+        "total_chunk_tokens": 18807,
+        "n_source_articles": 19,
+        "min_tokens": 841,
+        "max_tokens": 1000,
+        "mean_tokens_per_chunk": 989.8421052631579
+      }
+    },
+    "by_config_split": {
+      "cross_topic_1/test": 74,
+      "cross_topic_1/train": 38,
+      "cross_topic_1/validation": 13
+    }
+  },
+  "topic_leakage": {
+    "warning": true,
+    "message": "[TOPIC LEAK WARNING] content-word classifier accuracy (0.656) is within 0.05 of the MFW classifier (0.656); the function-word signal may be tracking subject matter rather than style.",
+    "n_chunks": 125,
+    "per_author_chunk_counts": {
+      "Catherine Bennett": 29,
+      "George Monbiot": 22,
+      "Hugo Young": 27,
+      "Jonathan Freedland": 28,
+      "Martin Kettle": 19
+    },
+    "chance_accuracy": 0.2,
+    "cv_folds": 5,
+    "warning_gap": 0.05,
+    "content_only": {
+      "accuracy": 0.656,
+      "accuracy_std": 0.08294576541331086,
+      "per_fold": [
+        0.64,
+        0.72,
+        0.72,
+        0.68,
+        0.52
+      ],
+      "n_features": 5593,
+      "n_chunks": 125
+    },
+    "mfw": {
+      "accuracy": 0.656,
+      "accuracy_std": 0.07266360849833978,
+      "per_fold": [
+        0.6,
+        0.72,
+        0.72,
+        0.68,
+        0.56
+      ],
+      "n_features": 5989,
+      "n_chunks": 125
+    },
+    "accuracy_gap_mfw_minus_content": 0.0
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "metric": "char_ngram_cosine",
+  "feature_space": "char_ngram",
+  "n_chunks": 125,
+  "n_authors": 5,
+  "n_pairs": 7747,
+  "n_self_pairs": 1534,
+  "n_cross_pairs": 6213,
+  "auc": 0.625589487156404,
+  "perm": {
+    "observed_auc": 0.625589487156404,
+    "n_permutations": 250,
+    "n_valid_permutations": 250,
+    "p_value": 0.00398406374501992,
+    "permuted_auc_mean": 0.5000488512510629,
+    "permuted_auc_std": 0.0072838255483063845,
+    "permuted_auc_50": 0.49935886481035996,
+    "permuted_auc_95": 0.5119834646329862,
+    "permuted_auc_99": 0.5168586070831992,
+    "observed_ge_count": 0
+  },
+  "plot_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances_overlap_char_ngram_cosine.png",
+  "distance_matrix_path": "C:\\Users\\mrand\\OneDrive\\Desktop\\Code\\Python\\linguistic-ai-detection\\src/plots\\distances\\char_ngram_cosine.npy"
+}
