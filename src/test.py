@@ -11,6 +11,7 @@ from analysis import (
     get_all_metrics,
     global_similarity,
     plot_distribution,
+    plot_spider_charts,
     print_comparison,
     print_global_similarity,
 )
@@ -67,6 +68,14 @@ def main() -> None:
         save_path=plot_path,
     )
     print(f"\nSaved words-per-sentence histogram to {plot_path}")
+
+    print("\n--- generating spider charts ---")
+    plot_spider_charts(
+        [metrics_a, metrics_b],
+        [label_a, label_b],
+        out_dir=out_dir,
+    )
+    print(f"Saved spider charts to {out_dir}")
 
 
 if __name__ == "__main__":

@@ -279,6 +279,105 @@ def plot_multi_comparison(
     plt.close(fig)
 
 
+_SPIDER_GROUPS = {
+    "connective_": "Connective Density by Type",
+    "dep_": "Syntactic Dependency Distribution",
+    "pos_": "Part-of-Speech Distribution",
+}
+
+
+def _spider_axis_mean(values) -> float:
+    arr = np.asarray(values, dtype=float) if values else np.zeros(0)
+    return float(arr.mean()) if arr.size else 0.0
+
+
+def _spider_min_max(values: list[float]) -> list[float]:
+    arr = np.asarray(values, dtype=float)
+    lo, hi = float(arr.min()), float(arr.max())
+    if hi == lo:
+        return [0.5 for _ in values]
+    return ((arr - lo) / (hi - lo)).tolist()
+
+
+def plot_spider_charts(
+    metrics_list: list[dict[str, list]],
+    labels: list[str],
+    out_dir: str = "plots",
+    prefix: str = "spider_",
+) -> None:
+    """Write one radar chart per metric group (connective_, dep_, pos_).
+
+    Each chart overlays one polygon per input text sharing the same axes
+    (metric names within the group). Per-axis values are the mean per-sentence
+    counts across the text, then min-max normalized to [0, 1] across all texts
+    so different scales line up on the same plot. Axes whose value is constant
+    across all texts (e.g. a tag that never appears) are dropped. The plot's
+    POS group uses the bare tag (NN, VB, ...) as the axis label rather than
+    the full description so the chart stays readable.
+    """
+    if len(metrics_list) != len(labels):
+        raise ValueError("metrics_list and labels must have the same length")
+    if not metrics_list:
+        return
+
+    os.makedirs(out_dir, exist_ok=True)
+
+    for group_prefix, base_title in _SPIDER_GROUPS.items():
+        all_names: list[str] = []
+        seen: set[str] = set()
+        for m in metrics_list:
+            for k in m:
+                if k.startswith(group_prefix) and k not in seen:
+                    seen.add(k)
+                    all_names.append(k)
+        all_names.sort()
+        if len(all_names) < 3:
+            continue
+
+        raw_columns: list[list[float]] = []
+        axis_labels: list[str] = []
+        for name in all_names:
+            means = [_spider_axis_mean(m.get(name)) for m in metrics_list]
+            if float(np.std(means)) == 0.0:
+                continue
+            raw_columns.append(means)
+            axis_labels.append(name[len(group_prefix):])
+
+        if len(axis_labels) < 3:
+            continue
+
+        per_text = [list(row) for row in zip(*raw_columns)]
+        normalized = [_spider_min_max(row) for row in per_text]
+
+        n_axes = len(axis_labels)
+        angles = [i / float(n_axes) * 2.0 * np.pi for i in range(n_axes)]
+        angles_closed = angles + angles[:1]
+
+        fig_size = max(8.0, 1.2 + 0.45 * n_axes)
+        fig, ax = plt.subplots(figsize=(fig_size, fig_size), subplot_kw=dict(polar=True))
+        cmap = plt.get_cmap("tab10")
+        for i, label in enumerate(labels):
+            values = normalized[i] + normalized[i][:1]
+            color = cmap(i % 10)
+            ax.plot(angles_closed, values, color=color, linewidth=2, label=label)
+            ax.fill(angles_closed, values, color=color, alpha=0.15)
+
+        ax.set_xticks(angles)
+        ax.set_xticklabels(axis_labels, fontsize=9)
+        ax.tick_params(axis="x", pad=12)
+        ax.set_ylim(0, 1)
+        ax.set_yticks([0.25, 0.5, 0.75, 1.0])
+        ax.set_yticklabels(["0.25", "0.5", "0.75", "1.0"], fontsize=8)
+        ax.set_title(base_title, pad=28, fontsize=12)
+        ax.legend(loc="upper right", bbox_to_anchor=(1.25, 1.08))
+        fig.tight_layout()
+
+        filename = f"{prefix}{group_prefix.rstrip('_')}.png"
+        save_path = os.path.join(out_dir, filename)
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.close(fig)
+
+
 def plot_all_distributions(
     metrics: dict[str, list],
     out_dir: str = "plots",
