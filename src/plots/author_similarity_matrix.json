@@ -1,5 +1,5 @@
 {
-  "method": "manova",
+  "method": "simple",
   "authors": [
     "Christine Jones",
     "Erica X Eisen",
@@ -9,97 +9,99 @@
   ],
   "matrix": {
     "Christine Jones": {
-      "Christine Jones": 0.918711,
-      "Erica X Eisen": 0.849789,
-      "Frank Delaney": 0.889418,
-      "Matthew Green": 0.943219,
-      "Ross Bullen": 0.937419
+      "Christine Jones": 0.883926,
+      "Erica X Eisen": 0.845904,
+      "Frank Delaney": 0.876339,
+      "Matthew Green": 0.912625,
+      "Ross Bullen": 0.906999
     },
     "Erica X Eisen": {
-      "Christine Jones": 0.849789,
-      "Erica X Eisen": 0.881598,
-      "Frank Delaney": 0.752295,
-      "Matthew Green": 0.847847,
-      "Ross Bullen": 0.919647
+      "Christine Jones": 0.845904,
+      "Erica X Eisen": 0.84524,
+      "Frank Delaney": 0.815262,
+      "Matthew Green": 0.864524,
+      "Ross Bullen": 0.895533
     },
     "Frank Delaney": {
-      "Christine Jones": 0.889418,
-      "Erica X Eisen": 0.752295,
-      "Frank Delaney": 0.949405,
-      "Matthew Green": 0.91092,
-      "Ross Bullen": 0.891286
+      "Christine Jones": 0.876339,
+      "Erica X Eisen": 0.815262,
+      "Frank Delaney": 0.891785,
+      "Matthew Green": 0.921596,
+      "Ross Bullen": 0.886344
     },
     "Matthew Green": {
-      "Christine Jones": 0.943219,
-      "Erica X Eisen": 0.847847,
-      "Frank Delaney": 0.91092,
-      "Matthew Green": 0.94739,
-      "Ross Bullen": 0.954306
+      "Christine Jones": 0.912625,
+      "Erica X Eisen": 0.864524,
+      "Frank Delaney": 0.921596,
+      "Matthew Green": 0.895232,
+      "Ross Bullen": 0.923633
     },
     "Ross Bullen": {
-      "Christine Jones": 0.937419,
-      "Erica X Eisen": 0.919647,
-      "Frank Delaney": 0.891286,
-      "Matthew Green": 0.954306,
-      "Ross Bullen": 0.952188
+      "Christine Jones": 0.906999,
+      "Erica X Eisen": 0.895533,
+      "Frank Delaney": 0.886344,
+      "Matthew Green": 0.923633,
+      "Ross Bullen": 0.908173
     }
   },
   "self_info": {
     "Christine Jones": {
       "author": "Christine Jones",
-      "mean": 0.9187110294853101,
-      "std": 0.037801263058896604,
+      "mean": 0.8839260471985454,
+      "std": 0.02421325366441012,
       "n_permutations": 3,
       "per_permutation": [
-        0.8914971638493263,
-        0.9027631043826849,
-        0.9618728202239192
+        0.8964361449747462,
+        0.899325206752212,
+        0.856016789868678
       ]
     },
     "Erica X Eisen": {
       "author": "Erica X Eisen",
-      "mean": 0.8815981586004576,
-      "std": 0.05125639403350077,
+      "mean": 0.8452404071489443,
+      "std": 0.025727049427805952,
       "n_permutations": 3,
       "per_permutation": [
-        0.9076370681119188,
-        0.822549372729579,
-        0.9146080349598753
+        0.8715937872562706,
+        0.8201891396312256,
+        0.8439382945593366
       ]
     },
     "Frank Delaney": {
       "author": "Frank Delaney",
-      "mean": 0.9494046491466205,
-      "std": 0.022753058754014295,
+      "mean": 0.8917847743894888,
+      "std": 0.008927402002200395,
       "n_permutations": 3,
       "per_permutation": [
-        0.9409254002621043,
-        0.9751797892880545,
-        0.9321087578897028
+        0.8857087804338235,
+        0.9020345831782972,
+        0.8876109595563454
       ]
     },
     "Matthew Green": {
       "author": "Matthew Green",
-      "mean": 0.9473903142161068,
-      "std": 0.010563929102892477,
+      "mean": 0.8952315525741957,
+      "std": 0.02491711370909491,
       "n_permutations": 3,
       "per_permutation": [
-        0.9520980741302636,
-        0.9547819124686356,
-        0.9352909560494209
+        0.9056651025175564,
+        0.9132358527773757,
+        0.8667937024276551
       ]
     },
     "Ross Bullen": {
       "author": "Ross Bullen",
-      "mean": 0.9521876255528579,
-      "std": 0.023404633179440804,
+      "mean": 0.9081725105833967,
+      "std": 0.011455244860430577,
       "n_permutations": 4,
       "per_permutation": [
-        0.9667906708457706,
-        0.9416236310945476,
-        0.9245719413785456,
-        0.9757642588925676
+        0.9215646669287508,
+        0.895084307007585,
+        0.9126557680855998,
+        0.9033853003116513
       ]
     }
-  }
+  },
+  "metric_weights_applied": true,
+  "metric_weights_count": 53
 }

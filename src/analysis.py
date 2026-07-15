@@ -1,6 +1,7 @@
 # Analysis of stylometry on general works of text
 
 import os
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -397,6 +398,207 @@ def plot_all_distributions(
         )
 
 
+def _all_feature_stats(
+    metrics_a: dict[str, list],
+    metrics_b: dict[str, list],
+) -> pd.DataFrame:
+    """Build a per-metric summary table (means, stds, sample sizes) for two texts.
+
+    Used by plot_all_features_overlap. Rows for metrics that are empty in both
+    texts are dropped; metrics present in only one text are kept with zeros on
+    the missing side so the chart still shows a comparison.
+    """
+    rows: list[dict] = []
+    for name in sorted(set(metrics_a) | set(metrics_b)):
+        a_vals = np.asarray(metrics_a.get(name) or [], dtype=float)
+        b_vals = np.asarray(metrics_b.get(name) or [], dtype=float)
+        if a_vals.size == 0 and b_vals.size == 0:
+            continue
+        mean_a, std_a, n_a = _metric_summary(a_vals) if a_vals.size else (0.0, 0.0, 0)
+        mean_b, std_b, n_b = _metric_summary(b_vals) if b_vals.size else (0.0, 0.0, 0)
+        rows.append({
+            "name": name,
+            "mean_a": mean_a,
+            "mean_b": mean_b,
+            "std_a": std_a,
+            "std_b": std_b,
+            "n_a": n_a,
+            "n_b": n_b,
+        })
+    return pd.DataFrame(rows)
+
+
+def plot_all_features_overlap(
+    metrics_a: dict[str, list],
+    metrics_b: dict[str, list],
+    label_a: str,
+    label_b: str,
+    out_dir: str = "plots",
+    prefix: str = "all_features_",
+) -> pd.DataFrame:
+    """Write two complementary charts comparing every metric for two texts.
+
+    Chart 1 (``prefix}distributions.png``): small-multiples grid, one subplot
+    per metric. Each subplot overlays the two authors' per-sentence/per-word
+    distributions as semi-transparent histograms on a shared bin range, so
+    every metric gets its own axis. This sidesteps the scale problem of a
+    single shared axis (sentence lengths ~120, TTR ~0.7, cleft counts ~0
+    cannot all render at a useful size on one y-axis) and keeps both
+    distributions fully visible at every metric.
+
+    Chart 2 (``prefix}divergence.png``): horizontal bar chart of per-metric
+    divergence, sorted largest first. Divergence is |mean_a - mean_b| /
+    pooled-std (a.k.a. Cohen's d), which puts every metric on a common
+    standardized scale. Metrics whose pooled std is 0 are plotted as 0 with a
+    warning printed; they cannot separate the texts on their own.
+
+    Together these charts answer the question "do some metrics dominate and
+    hide real differences between authors?" Chart 1 exposes the raw shape
+    of each per-author distribution; Chart 2 exposes standardized
+    separation so metrics with very different natural magnitudes can be
+    compared on a common axis.
+    """
+    os.makedirs(out_dir, exist_ok=True)
+
+    df = _all_feature_stats(metrics_a, metrics_b)
+    if df.empty:
+        return df
+
+    metric_names = df["name"].tolist()
+    n = len(metric_names)
+
+    # ---- Chart 1: small multiples of per-metric distributions ----
+    ncols = 5 if n > 5 else max(n, 1)
+    nrows = (n + ncols - 1) // ncols
+    fig, axes = plt.subplots(
+        nrows,
+        ncols,
+        figsize=(3.2 * ncols, 2.4 * nrows + 0.6),
+        squeeze=False,
+    )
+    axes_flat = axes.flatten()
+
+    for i, name in enumerate(metric_names):
+        ax = axes_flat[i]
+        a_vals = np.asarray(metrics_a.get(name) or [], dtype=float)
+        b_vals = np.asarray(metrics_b.get(name) or [], dtype=float)
+
+        if a_vals.size == 0 and b_vals.size == 0:
+            ax.set_visible(False)
+            continue
+
+        if a_vals.size and b_vals.size:
+            combined = np.concatenate([a_vals, b_vals])
+        elif a_vals.size:
+            combined = a_vals
+        else:
+            combined = b_vals
+
+        lo, hi = float(combined.min()), float(combined.max())
+        if hi == lo:
+            hi = lo + 1
+        bins = np.linspace(lo, hi, 12)
+
+        if a_vals.size:
+            ax.hist(
+                a_vals,
+                bins=bins,
+                alpha=0.55,
+                label=label_a,
+                color="steelblue",
+                edgecolor="black",
+            )
+        if b_vals.size:
+            ax.hist(
+                b_vals,
+                bins=bins,
+                alpha=0.55,
+                label=label_b,
+                color="darkorange",
+                edgecolor="black",
+            )
+
+        ax.set_title(name, fontsize=8)
+        ax.tick_params(labelsize=6)
+
+    for j in range(n, len(axes_flat)):
+        axes_flat[j].set_visible(False)
+
+    fig.suptitle(
+        f"All Features Comparison: {label_a} vs {label_b}",
+        fontsize=12,
+        y=0.995,
+    )
+    first_ax = next((ax for ax in axes_flat if ax.get_visible()), None)
+    if first_ax is not None:
+        handles, labels = first_ax.get_legend_handles_labels()
+        if handles:
+            fig.legend(
+                handles,
+                labels,
+                loc="lower center",
+                ncol=2,
+                bbox_to_anchor=(0.5, 0.005),
+                fontsize=10,
+                frameon=True,
+            )
+    fig.tight_layout(rect=[0, 0.025, 1, 0.97])
+    fig.savefig(
+        os.path.join(out_dir, f"{prefix}distributions.png"),
+        dpi=150,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+
+    # ---- Chart 2: per-metric standardized divergence ----
+    pooled_sq = (df["std_a"].fillna(0.0) ** 2 + df["std_b"].fillna(0.0) ** 2) / 2.0
+    pooled = np.sqrt(pooled_sq)
+    abs_diff = (df["mean_a"] - df["mean_b"]).abs()
+    with np.errstate(divide="ignore", invalid="ignore"):
+        cohens_d = np.where(pooled > 0, abs_diff / pooled, np.nan)
+    df = df.copy()
+    df["cohens_d"] = cohens_d
+
+    zero_var = df[df["cohens_d"].isna()]["name"].tolist()
+    if zero_var:
+        print(
+            f"[all_features_overlap] pooled std = 0 (no divergence possible) "
+            f"for: {zero_var}"
+        )
+    df["cohens_d"] = df["cohens_d"].fillna(0.0)
+    df_sorted = df.sort_values("cohens_d", ascending=True)  # largest at top of horizontal chart
+
+    n_metrics = len(df_sorted)
+    fig_h = max(6.0, 0.32 * n_metrics + 2.0)
+    fig, ax = plt.subplots(figsize=(11.0, fig_h))
+    y = np.arange(n_metrics)
+    ax.barh(
+        y,
+        df_sorted["cohens_d"].values,
+        color="steelblue",
+        edgecolor="black",
+        alpha=0.85,
+    )
+    ax.set_yticks(y)
+    ax.set_yticklabels(df_sorted["name"].tolist(), fontsize=8)
+    ax.set_xlabel("|mean_a - mean_b| / pooled std  (Cohen's d, higher = more separating)")
+    ax.set_title(
+        f"Per-Metric Divergence: {label_a} vs {label_b}\n"
+        "(standardized mean difference; metrics with the largest d are the "
+        "strongest separators between these two authors)"
+    )
+    ax.grid(axis="x", alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(
+        os.path.join(out_dir, f"{prefix}divergence.png"),
+        dpi=150,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+
+    return df
+
+
 def _sentence_count(metrics: dict[str, list]) -> int | None:
     """Best-effort sentence count for a metric dict.
 
@@ -448,6 +650,7 @@ def _global_simple(
     metrics_a: dict[str, list],
     metrics_b: dict[str, list],
     min_appearances: int = 10,
+    metric_weights: dict[str, float] | None = None,
 ) -> dict:
     """Combine per-metric KS distances using capped linear weights.
 
@@ -456,6 +659,11 @@ def _global_simple(
     weighted mean of those contributions; metrics with too few observations
     fall out before averaging, so dominant high-volume metrics do not skew the
     result while rare-feature noise does not dominate either.
+
+    When ``metric_weights`` is provided, each metric's capped linear weight is
+    additionally scaled by ``metric_weights[name]``. The scaled weight is also
+    reported in ``per_metric[name]["tuned_weight"]`` so callers can audit which
+    features drove the final similarity.
     """
     n_a = _sentence_count(metrics_a) or 0
     n_b = _sentence_count(metrics_b) or 0
@@ -482,13 +690,15 @@ def _global_simple(
         ks_stat, _ = ks_2samp(a, b)
         ks_stat = float(ks_stat)
         combined_nz = _combined_nonzero(a, b)
-        weight = _capped_linear_weight(combined_nz, min_appearances)
+        base_weight = _capped_linear_weight(combined_nz, min_appearances)
+        weight = _apply_metric_weights(base_weight, name, metric_weights)
         similarity = max(0.0, 1.0 - ks_stat)
 
         per_metric[name] = {
             "ks_distance": ks_stat,
             "combined_nonzero": combined_nz,
             "weight": weight,
+            "base_weight": base_weight,
             "similarity": similarity,
             "n_a": int(a.size),
             "n_b": int(b.size),
@@ -499,10 +709,13 @@ def _global_simple(
 
     similarity = numerator / denominator if denominator > 0 else 1.0
     used = sum(1 for v in per_metric.values() if v["weight"] > 0)
+    weighting_desc = f"capped_linear,threshold={min_appearances}"
+    if metric_weights:
+        weighting_desc += ",tuned"
     return {
         "similarity": float(similarity),
         "method": "simple",
-        "weighting": f"capped_linear,threshold={min_appearances}",
+        "weighting": weighting_desc,
         "n_metrics": len(per_metric),
         "n_metrics_used": used,
         "n_metrics_dropped": len(dropped),
@@ -688,11 +901,57 @@ def _global_manova(
     }
 
 
+DEFAULT_METRIC_WEIGHTS_FILENAME = "metric_weights.json"
+METRIC_WEIGHTS_SCHEMA_VERSION = 1
+
+
+def load_metric_weights(path: str | None) -> dict[str, float] | None:
+    """Load a metric_weights.json file, returning None when unavailable.
+
+    The file is expected to be produced by ``src.tune.compute_metric_weights``
+    and contains a top-level ``metric_weights`` dict mapping metric name to a
+    positive float. If ``path`` is None, the file does not exist, or it is
+    malformed, None is returned and the caller treats weights as 1.0.
+    """
+    if path is None:
+        return None
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            payload = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    weights = payload.get("metric_weights") if isinstance(payload, dict) else None
+    if not isinstance(weights, dict):
+        return None
+    out: dict[str, float] = {}
+    for name, value in weights.items():
+        try:
+            f = float(value)
+        except (TypeError, ValueError):
+            continue
+        if f > 0:
+            out[str(name)] = f
+    return out or None
+
+
+def _apply_metric_weights(
+    base_weight: float,
+    name: str,
+    metric_weights: dict[str, float] | None,
+) -> float:
+    if not metric_weights:
+        return base_weight
+    return float(base_weight * metric_weights.get(name, 1.0))
+
+
 def global_similarity(
     metrics_a: dict[str, list],
     metrics_b: dict[str, list],
     method: str = "simple",
     min_appearances: int = 10,
+    metric_weights: dict[str, float] | None = None,
 ) -> dict:
     """Compute a single [0, 1] similarity score between two metric dicts.
 
@@ -717,7 +976,7 @@ def global_similarity(
         dropped metrics with reasons.
     """
     if method == "simple":
-        return _global_simple(metrics_a, metrics_b, min_appearances)
+        return _global_simple(metrics_a, metrics_b, min_appearances, metric_weights)
     if method == "manova":
         return _global_manova(metrics_a, metrics_b, min_appearances)
     raise ValueError(f"unknown method: {method!r}; expected 'simple' or 'manova'")

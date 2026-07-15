@@ -137,6 +137,110 @@ def test_invalid_method_raises() -> None:
     raise AssertionError("expected ValueError for unknown method")
 
 
+def test_weighted_identical_inputs_stay_full_similarity() -> None:
+    """Symmetric weighting is multiplicative so identical inputs remain 1.0."""
+    metrics = _make_metrics(200, seed=42)
+    weights = {"sentence_lengths": 2.5, "pos_NN": 0.5}
+    base = global_similarity(metrics, metrics, method="simple")
+    tuned = global_similarity(metrics, metrics, method="simple",
+                              metric_weights=weights)
+    assert _is_close(base["similarity"], 1.0)
+    assert _is_close(tuned["similarity"], 1.0), (
+        f"weighted identical inputs should still give 1.0, got {tuned['similarity']}"
+    )
+    assert "tuned" in tuned["weighting"]
+
+
+def test_weighted_can_change_simple_similarity() -> None:
+    """A heavy weight on a divergent metric lowers similarity vs the baseline."""
+    rng = np.random.default_rng(0)
+    base_a = rng.integers(40, 200, size=100).tolist()
+    base_b = rng.integers(40, 200, size=100).tolist()
+    a = {"sentence_lengths": base_a, "pos_NN": [0] * 50 + [1] * 50}
+    b = {"sentence_lengths": base_b, "pos_NN": [0] * 100}
+    unweighted = global_similarity(a, b, method="simple")
+    tuned = global_similarity(a, b, method="simple",
+                              metric_weights={"pos_NN": 10.0})
+    assert "tuned" in tuned["weighting"]
+    info = tuned["per_metric"]["pos_NN"]
+    assert info["base_weight"] > 0.0
+    assert info["weight"] == info["base_weight"] * 10.0
+    unweighted_pos_weight = unweighted["per_metric"]["pos_NN"]["weight"]
+    assert info["weight"] > unweighted_pos_weight, (
+        f"weighted pos_NN weight should exceed unweighted, "
+        f"got {info['weight']} vs {unweighted_pos_weight}"
+    )
+    assert tuned["similarity"] != unweighted["similarity"], (
+        f"tuned and unweighted similarity should differ, both={tuned['similarity']:.4f}"
+    )
+    print(f"  unweighted sim={unweighted['similarity']:.4f}  "
+          f"tuned sim={tuned['similarity']:.4f}")
+
+
+def test_tune_compute_metric_weights_prefers_discriminant() -> None:
+    """End-to-end: same-author pairs agree on noise, diff pairs disagree."""
+    from tune import compute_metric_weights
+
+    n_sentences = 60
+
+    def author_metrics(
+        seed: int, marker_bias: float, distractor_bias: float
+    ) -> dict[str, list]:
+        a_rng = np.random.default_rng(seed)
+        return {
+            "marker": a_rng.normal(loc=marker_bias, scale=0.1,
+                                   size=n_sentences).tolist(),
+            "distractor": a_rng.normal(loc=distractor_bias, scale=0.1,
+                                       size=n_sentences).tolist(),
+        }
+
+    essays = [
+        {"author": "By Alice", "body": ""},
+        {"author": "By Alice", "body": ""},
+        {"author": "By Bob", "body": ""},
+        {"author": "By Bob", "body": ""},
+    ]
+    metrics_lookup = {
+        0: author_metrics(101, marker_bias=0.0, distractor_bias=1.0),
+        1: author_metrics(102, marker_bias=0.05, distractor_bias=1.05),
+        2: author_metrics(201, marker_bias=2.0, distractor_bias=2.0),
+        3: author_metrics(202, marker_bias=2.05, distractor_bias=2.2),
+    }
+
+    payload = compute_metric_weights(essays, metrics_lookup=metrics_lookup)
+    assert payload["n_same_pairs"] == 2
+    assert payload["n_diff_pairs"] == 4
+    weights = payload["metric_weights"]
+    assert "marker" in weights, weights
+    assert "distractor" in weights, weights
+    assert weights["marker"] > 1.0, weights
+    assert weights["marker"] > weights["distractor"], weights
+    assert payload["stats"]["marker"]["sep"] > payload["stats"]["distractor"]["sep"], \
+        payload["stats"]  # the higher-sep metric should win
+    stats_marker = payload["stats"]["marker"]
+    assert stats_marker["d_D_mean"] > stats_marker["d_S_mean"], stats_marker
+
+
+def test_load_metric_weights_handles_missing_and_malformed(tmp_metrics_path=None) -> None:
+    from analysis import load_metric_weights
+
+    assert load_metric_weights(None) is None
+    assert load_metric_weights("definitely/not/here.json") is None
+
+    import json
+    import tempfile
+
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+        json.dump({"metric_weights": {"a": 1.5, "b": -1.0, "c": "x", "d": 0.4}}, f)
+        path = f.name
+    try:
+        weights = load_metric_weights(path)
+        assert weights == {"a": 1.5, "d": 0.4}, weights
+    finally:
+        os = __import__("os")
+        os.remove(path)
+
+
 if __name__ == "__main__":
     test_identical_inputs_full_similarity_simple()
     print("[ok] identical inputs -> similarity 1.0 (simple)")
@@ -155,5 +259,17 @@ if __name__ == "__main__":
 
     test_invalid_method_raises()
     print("[ok] unknown method raises ValueError")
+
+    test_weighted_identical_inputs_stay_full_similarity()
+    print("[ok] weighted identical inputs remain 1.0")
+
+    test_weighted_can_change_simple_similarity()
+    print("[ok] weighted simple similarity reports tuned weights")
+
+    test_tune_compute_metric_weights_prefers_discriminant()
+    print("[ok] tune.compute_metric_weights upweights discriminant metrics")
+
+    test_load_metric_weights_handles_missing_and_malformed()
+    print("[ok] load_metric_weights handles missing/malformed files")
 
     print("\nAll smoke tests passed.")

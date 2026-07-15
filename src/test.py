@@ -5,11 +5,14 @@
 #   python test.py author-similarity                   # LOO self + concat cross matrix
 #   python test.py author-similarity --method manova
 #   python test.py author-similarity --out-dir DIR --workers N --no-cache
+#   python test.py author-similarity --weights metric_weights.json
+#   python test.py author-similarity --no-weights
 #
 # Outputs from `author-similarity` are written to out-dir (default src/plots/):
 #   - author_self_similarity.png      bar chart of LOO self-similarity per author
 #   - author_similarity_heatmap.png   n x n heatmap of self + cross similarity
 #   - author_similarity_matrix.json   full matrix + per-cell metadata
+#   - metric_weights.json             produced by tune.py; loaded when present
 #   - .essay_metrics_cache.json       cached per-essay + concat-corpus metrics
 
 from __future__ import annotations
@@ -35,10 +38,14 @@ from analysis import (
     compare_metrics,
     get_all_metrics,
     global_similarity,
+    load_metric_weights,
+    plot_all_features_overlap,
     plot_distribution,
     plot_spider_charts,
     print_comparison,
     print_global_similarity,
+    DEFAULT_METRIC_WEIGHTS_FILENAME,
+    METRIC_WEIGHTS_SCHEMA_VERSION,
 )
 
 
@@ -175,6 +182,7 @@ def compute_self_similarity(
     essays: list[dict],
     cache: dict,
     method: str,
+    metric_weights: dict[str, float] | None = None,
 ) -> dict:
     """LOO self-similarity: average global_similarity over N permutations."""
     if len(indices) < 2:
@@ -191,7 +199,10 @@ def compute_self_similarity(
         corpus_metrics = _ensure_metrics(corpus_text, cache)
         held_metrics = _ensure_metrics(held_text, cache)
 
-        result = global_similarity(corpus_metrics, held_metrics, method=method)
+        result = global_similarity(
+            corpus_metrics, held_metrics, method=method,
+            metric_weights=metric_weights,
+        )
         sim = result.get("similarity")
         if sim is None:
             print(
@@ -220,13 +231,17 @@ def compute_cross_similarity(
     essays: list[dict],
     cache: dict,
     method: str,
+    metric_weights: dict[str, float] | None = None,
 ) -> float:
     """Concat(A) vs concat(B): single similarity score per author pair."""
     text_a = _concat_bodies(essays, indices_a)
     text_b = _concat_bodies(essays, indices_b)
     metrics_a = _ensure_metrics(text_a, cache)
     metrics_b = _ensure_metrics(text_b, cache)
-    result = global_similarity(metrics_a, metrics_b, method=method)
+    result = global_similarity(
+        metrics_a, metrics_b, method=method,
+        metric_weights=metric_weights,
+    )
     sim = result.get("similarity")
     if sim is None:
         print(
@@ -243,6 +258,7 @@ def build_similarity_matrix(
     essays: list[dict],
     cache: dict,
     method: str,
+    metric_weights: dict[str, float] | None = None,
 ) -> pd.DataFrame:
     authors = sorted(grouped.keys())
     n = len(authors)
@@ -254,7 +270,10 @@ def build_similarity_matrix(
     # Diagonal: LOO self-similarity per author.
     for author in authors:
         indices = grouped[author]
-        info = compute_self_similarity(author, indices, essays, cache, method)
+        info = compute_self_similarity(
+            author, indices, essays, cache, method,
+            metric_weights=metric_weights,
+        )
         matrix.loc[author, author] = info["mean"]
         self_info[author] = info
 
@@ -264,7 +283,8 @@ def build_similarity_matrix(
             if j <= i:
                 continue
             sim = compute_cross_similarity(
-                a, grouped[a], b, grouped[b], essays, cache, method
+                a, grouped[a], b, grouped[b], essays, cache, method,
+                metric_weights=metric_weights,
             )
             matrix.loc[a, b] = sim
             matrix.loc[b, a] = sim
@@ -372,13 +392,18 @@ def plot_similarity_heatmap(
 def cmd_single(_args: argparse.Namespace) -> None:
     essays = load_essays()
     first = author_name(essays[0])
-    author_essays = [e for e in essays if author_name(e) == first]
-    print(f"First author: {first} ({len(author_essays)} essays)")
+    second = next(
+        author_name(e) for e in essays if author_name(e) != first
+    )
+    first_essays = [e for e in essays if author_name(e) == first]
+    second_essays = [e for e in essays if author_name(e) == second]
+    print(f"First author:  {first} ({len(first_essays)} essays)")
+    print(f"Second author: {second} ({len(second_essays)} essays)")
 
-    text_a = author_essays[0]["body"] + "\n" + author_essays[1]["body"]
-    text_b = author_essays[2]["body"]
-    label_a = f"{first} essays 1+2"
-    label_b = f"{first} essay 3"
+    text_a = "\n\n".join(e["body"] for e in first_essays)
+    text_b = "\n\n".join(e["body"] for e in second_essays)
+    label_a = first
+    label_b = second
 
     metrics_a = get_all_metrics(text_a)
     metrics_b = get_all_metrics(text_b)
@@ -399,7 +424,7 @@ def cmd_single(_args: argparse.Namespace) -> None:
     plot_path = os.path.join(out_dir, "words_per_sentence_distribution.png")
     plot_distribution(
         metrics_a["words_per_sentence"] + metrics_b["words_per_sentence"],
-        title="Words per Sentence (all three essays combined)",
+        title=f"Words per Sentence ({label_a} + {label_b} combined)",
         xlabel="Words per Sentence",
         save_path=plot_path,
     )
@@ -412,6 +437,39 @@ def cmd_single(_args: argparse.Namespace) -> None:
         out_dir=out_dir,
     )
     print(f"Saved spider charts to {out_dir}")
+
+    print("\n--- generating all-features overlap charts ---")
+    stats_df = plot_all_features_overlap(
+        metrics_a,
+        metrics_b,
+        label_a=label_a,
+        label_b=label_b,
+        out_dir=out_dir,
+    )
+    if not stats_df.empty:
+        ranked = stats_df.assign(
+            pooled_sq=lambda d: (d["std_a"].fillna(0.0) ** 2 + d["std_b"].fillna(0.0) ** 2) / 2.0,
+        ).assign(
+            pooled=lambda d: np.sqrt(d["pooled_sq"]),
+        ).assign(
+            abs_diff=lambda d: (d["mean_a"] - d["mean_b"]).abs(),
+        )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            ranked = ranked.assign(
+                cohens_d=lambda d: np.where(
+                    d["pooled"] > 0, d["abs_diff"] / d["pooled"], 0.0
+                )
+            )
+        ranked = ranked.sort_values("cohens_d", ascending=False)
+        print("Top 10 most separating metrics (Cohen's d):")
+        for _, row in ranked.head(10).iterrows():
+            print(
+                f"  {row['name']:<38} "
+                f"d={row['cohens_d']:.3f}  "
+                f"mean_a={row['mean_a']:.3f}+/-{row['std_a']:.3f}  "
+                f"mean_b={row['mean_b']:.3f}+/-{row['std_b']:.3f}"
+            )
+    print(f"Saved all-features overlap charts to {out_dir}")
 
 
 # ---------------------------------------------------------------------------
@@ -439,6 +497,17 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
 
     cache: dict = {} if args.no_cache else _load_cache(out_dir)
 
+    metric_weights: dict[str, float] | None = None
+    if args.method == "simple" and not args.no_weights:
+        weights_path = args.weights or os.path.join(out_dir, DEFAULT_METRIC_WEIGHTS_FILENAME)
+        metric_weights = load_metric_weights(weights_path)
+        if metric_weights:
+            print(f"[weights] loaded {len(metric_weights)} weights from {weights_path}")
+        elif args.weights:
+            print(f"[weights] WARNING: --weights file missing or empty: {weights_path}")
+    elif args.method == "manova" and args.weights:
+        print("[weights] NOTE: --weights is only applied to the 'simple' method")
+
     def _persist():
         if not args.no_cache:
             _save_cache(out_dir, cache)
@@ -450,7 +519,7 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
     _compute_essay_metrics_parallel(essays, cache, args.workers, label="essay")
     _persist()
 
-    matrix = build_similarity_matrix(grouped, essays, cache, args.method)
+    matrix = build_similarity_matrix(grouped, essays, cache, args.method, metric_weights)
     self_info = matrix.attrs["self_info"]
 
     # Persist matrix JSON.
@@ -460,6 +529,8 @@ def cmd_author_similarity(args: argparse.Namespace) -> None:
         "authors": list(matrix.index),
         "matrix": matrix.round(6).to_dict(orient="index"),
         "self_info": self_info,
+        "metric_weights_applied": bool(metric_weights),
+        "metric_weights_count": len(metric_weights) if metric_weights else 0,
     }
     with open(matrix_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
@@ -561,6 +632,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-cache",
         action="store_true",
         help="Ignore and overwrite the per-essay metrics cache.",
+    )
+    p_sim.add_argument(
+        "--weights",
+        default=None,
+        help=(
+            "Path to a metric_weights.json file produced by src/tune.py. "
+            "Applied to the 'simple' method only."
+        ),
+    )
+    p_sim.add_argument(
+        "--no-weights",
+        action="store_true",
+        help=(
+            "Disable metric weights even if a default file exists in --out-dir."
+        ),
     )
     p_sim.set_defaults(func=cmd_author_similarity)
 
