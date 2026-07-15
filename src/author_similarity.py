@@ -13,13 +13,16 @@ same-author, different-source-document chunk pairs (i.e. the same
 population that drives the ``is_self`` positive class in
 ``src.evaluation``); the off-diagonal averages over cross-author pairs.
 
-The output is one heatmap per metric plus a combined figure showing all
-three metrics side-by-side. Raw 5x5 matrices are also written as JSON.
+By default only ``cosine_delta`` is rendered (it is the most
+discriminating of the three metrics, see ``run_summary.json``). The
+displayed similarity values are min-max normalised across the full
+matrix so the lowest cell is 0 and the highest is 1, regardless of the
+underlying distance scale. Raw 5x5 matrices are also written as JSON.
 
 CLI::
 
     python -m src.author_similarity
-    python -m src.author_similarity --metric cosine_delta
+    python -m src.author_similarity --metric burrows_delta
     python -m src.author_similarity --distances-dir src/plots/distances \\
         --out-dir src/plots
 """
@@ -48,6 +51,7 @@ from src import chunking
 
 
 METRICS = ("cosine_delta", "burrows_delta", "char_ngram_cosine")
+DEFAULT_METRIC = "cosine_delta"
 
 
 def _chunk_dict_to_text(chunks) -> list[str]:
@@ -88,11 +92,13 @@ def author_similarity_matrix(
     1. average the per-chunk-pair distances over all qualifying pairs
        (same-author = self, different-author = cross; same-source-doc
        pairs dropped when ``exclude_same_source_document`` is true);
-    2. min-max normalise against the full distance matrix's range
-       (``normalize=True``, the default) so cell values live in
-       ``[0, 1]`` regardless of metric scale (cosine is in [0, 1] but
-       Burrows's Manhattan on z-scored vectors is hundreds);
-    3. invert: ``similarity = 1 - normalised_distance``.
+    2. when ``normalize=True``, scale distances by the off-diagonal
+       range of ``distance_matrix`` so cosine-style metrics stay
+       bounded, then invert: ``similarity = 1 - normalised_distance``;
+    3. when ``normalize=True``, a final min-max pass stretches the
+       similarity values across ``[0, 1]`` so the lowest cell is 0
+       and the highest is 1, regardless of the underlying distance
+       scale or how tightly the means are clustered.
 
     Returns ``(matrix, author_order)`` where ``matrix[i, j]`` is in
     ``[0, 1]`` and ``author_order[i]`` is the author label for
@@ -148,6 +154,18 @@ def author_similarity_matrix(
 
     M = 1.0 - M
     M = np.clip(M, 0.0, 1.0)
+
+    if normalize:
+        finite_M = np.isfinite(M)
+        if finite_M.any():
+            lo_M = float(M[finite_M].min())
+            hi_M = float(M[finite_M].max())
+            span_M = hi_M - lo_M
+            if span_M > 0:
+                M = np.where(np.isfinite(M), (M - lo_M) / span_M, np.nan)
+            else:
+                M = np.where(np.isfinite(M), 0.0, np.nan)
+
     return M, author_order
 
 
@@ -232,7 +250,7 @@ def build(
     config: dict,
     distances_dir: str,
     out_dir: str,
-    metrics: Sequence[str] = METRICS,
+    metrics: Sequence[str] = (DEFAULT_METRIC,),
 ) -> dict:
     """Compute and write the 5x5 similarity matrices. Returns a summary dict."""
     essays_path = os.path.join(REPO_ROOT, config["essays_path"])
@@ -298,9 +316,10 @@ def build(
             payload,
         )
 
-    combined_path = os.path.join(out_dir, "author_similarity_combined.png")
-    plot_combined(matrices, author_order, combined_path)
-    print(f"[author-similarity] wrote {combined_path}")
+    if len(matrices) > 1:
+        combined_path = os.path.join(out_dir, "author_similarity_combined.png")
+        plot_combined(matrices, author_order, combined_path)
+        print(f"[author-similarity] wrote {combined_path}")
 
     summary = {
         "authors": author_order,
@@ -321,14 +340,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out-dir",
                    default=os.path.join(REPO_ROOT, "src", "plots"))
     p.add_argument("--metric", action="append", choices=METRICS, default=None,
-                   help="Restrict to one metric (repeatable). Default: all three.")
+                   help="Restrict to one metric (repeatable). Default: cosine_delta.")
     return p
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     cfg = _load_config(args.config)
-    metrics = list(args.metric) if args.metric else list(METRICS)
+    metrics = list(args.metric) if args.metric else [DEFAULT_METRIC]
     build(
         cfg,
         distances_dir=args.distances_dir,
@@ -340,6 +359,7 @@ def main(argv: list[str] | None = None) -> int:
 
 __all__ = [
     "METRICS",
+    "DEFAULT_METRIC",
     "author_similarity_matrix",
     "plot_heatmap",
     "plot_combined",

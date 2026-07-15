@@ -157,6 +157,6 @@ def test_build_writes_outputs(tmp_path):
     )
     assert os.path.isfile(str(out_dir / "author_similarity_cosine_delta.png"))
     assert os.path.isfile(str(out_dir / "author_similarity_cosine_delta.json"))
-    assert os.path.isfile(str(out_dir / "author_similarity_combined.png"))
+    assert not os.path.isfile(str(out_dir / "author_similarity_combined.png"))
     matrix = summary["per_metric"]["cosine_delta"]["matrix"]
     assert len(matrix) == 2 and all(len(row) == 2 for row in matrix)
