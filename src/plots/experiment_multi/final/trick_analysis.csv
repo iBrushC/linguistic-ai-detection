@@ -1,0 +1,6 @@
+model,n_valid_folds,n_trick,trick_rate,mean_delta,median_delta,best_trick_author,best_trick_article,best_trick_delta
+chatgpt-5.6,24,3,0.1250,0.158992,0.110477,Jonathan Freedland,cross_topic_1/test/3/test_127,-0.014841127337259064
+claude-opus-4.8,25,2,0.0800,0.127238,0.096143,George Monbiot,cross_topic_1/test/1/test_103,-0.29826418578518976
+deepseek-v4-pro,25,3,0.1200,0.156903,0.100155,Martin Kettle,cross_topic_1/train/4/train_39,-0.016393913413802252
+glm-5.2,25,6,0.2400,0.113346,0.075813,George Monbiot,cross_topic_1/validation/1/validation_5,-0.18676509763681282
+ALL_MODELS_POOLED,99,14,0.1414,0.138919,0.096143,,,nan

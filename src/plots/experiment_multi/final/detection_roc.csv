@@ -1,0 +1,5 @@
+model,auc,n_pos,n_neg
+chatgpt-5.6,0.876667,24,25
+claude-opus-4.8,0.824000,25,25
+deepseek-v4-pro,0.899200,25,25
+glm-5.2,0.784000,25,25
