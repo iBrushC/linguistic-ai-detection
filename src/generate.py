@@ -306,6 +306,11 @@ def cmd_details(args) -> None:
 
     client = make_client()
 
+    target_ids: set[str] | None = None
+    if args.use_selector:
+        manifest = experiment_mod.load_manifest(args.use_selector)
+        target_ids = {e["article_id"] for e in manifest["essays"]}
+
     existing = load_json(DETAILS_PATH, default=[])
     if not isinstance(existing, list):
         existing = []
@@ -321,7 +326,9 @@ def cmd_details(args) -> None:
             continue
         essay = essays[idx]
         article_id = essay["article_id"]
-        if article_id in by_id and by_id[article_id] is not None:
+        if target_ids is not None and article_id not in target_ids:
+            continue
+        if article_id in by_id and by_id[article_id] is not None and not args.overwrite:
             print(f"[details] article_id={article_id}: already populated, skipping")
             continue
         preview = article_title(essay, fallback=article_id)[:60]
@@ -437,7 +444,15 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"Friendly model name from models.json (default: {DEFAULT_MODEL}).",
     )
     p_details.add_argument(
+        "--use-selector",
+        default=None,
+        help="Path to an experiment manifest restricting targets to the selected essays.",
+    )
+    p_details.add_argument(
         "--essay-index", type=int, default=None, help="Only generate for this essay index."
+    )
+    p_details.add_argument(
+        "--overwrite", action="store_true", help="Regenerate even if an assignment exists."
     )
 
     p_recreate = sub.add_parser(

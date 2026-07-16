@@ -99,13 +99,19 @@ human author. Picks five authors and five essays per author (seed
 four natural essays for stylistic context, then runs five
 leave-one-out folds per author.
 
+The single-command driver runs the whole test:
+
 ```
 set OPENROUTER_API_KEY=...
-python -m src.experiment select --out-dir generated
-python -m src.generate details --model glm-5.2 --use-selector generated/experiment_manifest.json
-python -m src.generate recreate --model glm-5.2 --use-selector generated/experiment_manifest.json
-python -m src.experiment score --manifest generated/experiment_manifest.json --out-dir src/plots/experiment_first
+python scripts/run_first_test.py                      # real run
+python scripts/run_first_test.py --dry-run            # offline sanity check
+python scripts/run_first_test.py --skip-details       # reuse existing assignments
+python scripts/run_first_test.py --skip-recreate      # reuse existing recreations
+python scripts/run_first_test.py --model glm-5.2      # override the model alias
 ```
+
+`--dry-run` writes stub assignments and recreations so the scoring
+pipeline still executes end-to-end without network calls.
 
 For every fold the scoring fits MFW vocabulary on natural chunks and
 reference mu/sigma on `reference_corpus.json` only; AI chunks never
@@ -115,9 +121,19 @@ the AI-recreated essays. Outputs:
 
 * `generated/experiment_manifest.json` -- deterministic selection.
 * `generated/essay_details.json` -- shared assignments.
-* `generated/essays_glm-5.2_recreate.json` -- recreations.
-* `src/plots/experiment_<run>/folds.json` -- per-fold distances.
-* `src/plots/experiment_<run>/summary.json` -- per-author and overall
+* `generated/essays_<model>_recreate.json` -- recreations.
+* `src/plots/experiment_first/folds.json` -- per-fold distances.
+* `src/plots/experiment_first/summary.json` -- per-author and overall
   mean/SD.
-* `src/plots/experiment_<run>/folds_cosine_delta.png` -- grouped
+* `src/plots/experiment_first/folds_cosine_delta.png` -- grouped
   natural vs AI bar chart with SD error bars.
+
+The same stages are also available as standalone modules if you
+prefer the granular workflow:
+
+```
+python -m src.experiment select --out-dir generated
+python -m src.generate details --model glm-5.2 --use-selector generated/experiment_manifest.json
+python -m src.generate recreate --model glm-5.2 --use-selector generated/experiment_manifest.json
+python -m src.experiment score --manifest generated/experiment_manifest.json --out-dir src/plots/experiment_first
+```

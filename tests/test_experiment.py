@@ -167,7 +167,7 @@ def test_generate_recreation_uses_current_schema(tmp_path):
         detail=detail,
         same_author_essays=[essay],
         client=fake_client,
-        model_slug="zhipu/glm-5.2",
+        model_slug="z-ai/glm-5.2",
         source_article_id="a/e0",
     )
     assert out["source_article_id"] == "a/e0"

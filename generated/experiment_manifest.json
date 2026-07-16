@@ -1,0 +1,136 @@
+{
+  "seed": 1729,
+  "n_authors": 5,
+  "n_essays_per_author": 5,
+  "chunk_size_tokens": 1000,
+  "min_chunk_fill_ratio": 0.8,
+  "min_chunks_per_essay": 1,
+  "n_essays_total": 25,
+  "essays": [
+    {
+      "article_id": "cross_topic_1/test/0/test_90",
+      "author": "Catherine Bennett",
+      "tokens": 1318
+    },
+    {
+      "article_id": "cross_topic_1/train/0/train_2",
+      "author": "Catherine Bennett",
+      "tokens": 1493
+    },
+    {
+      "article_id": "cross_topic_1/train/0/train_5",
+      "author": "Catherine Bennett",
+      "tokens": 1690
+    },
+    {
+      "article_id": "cross_topic_1/train/0/train_6",
+      "author": "Catherine Bennett",
+      "tokens": 1584
+    },
+    {
+      "article_id": "cross_topic_1/validation/0/validation_2",
+      "author": "Catherine Bennett",
+      "tokens": 1617
+    },
+    {
+      "article_id": "cross_topic_1/test/1/test_103",
+      "author": "George Monbiot",
+      "tokens": 1374
+    },
+    {
+      "article_id": "cross_topic_1/test/1/test_104",
+      "author": "George Monbiot",
+      "tokens": 1402
+    },
+    {
+      "article_id": "cross_topic_1/test/1/test_105",
+      "author": "George Monbiot",
+      "tokens": 1328
+    },
+    {
+      "article_id": "cross_topic_1/test/1/test_106",
+      "author": "George Monbiot",
+      "tokens": 1361
+    },
+    {
+      "article_id": "cross_topic_1/validation/1/validation_5",
+      "author": "George Monbiot",
+      "tokens": 899
+    },
+    {
+      "article_id": "cross_topic_1/test/2/test_119",
+      "author": "Hugo Young",
+      "tokens": 1108
+    },
+    {
+      "article_id": "cross_topic_1/test/2/test_13",
+      "author": "Hugo Young",
+      "tokens": 1353
+    },
+    {
+      "article_id": "cross_topic_1/test/2/test_16",
+      "author": "Hugo Young",
+      "tokens": 1341
+    },
+    {
+      "article_id": "cross_topic_1/validation/2/validation_11",
+      "author": "Hugo Young",
+      "tokens": 1345
+    },
+    {
+      "article_id": "cross_topic_1/validation/2/validation_12",
+      "author": "Hugo Young",
+      "tokens": 1320
+    },
+    {
+      "article_id": "cross_topic_1/test/3/test_127",
+      "author": "Jonathan Freedland",
+      "tokens": 1428
+    },
+    {
+      "article_id": "cross_topic_1/test/3/test_22",
+      "author": "Jonathan Freedland",
+      "tokens": 1305
+    },
+    {
+      "article_id": "cross_topic_1/test/3/test_25",
+      "author": "Jonathan Freedland",
+      "tokens": 1958
+    },
+    {
+      "article_id": "cross_topic_1/train/3/train_27",
+      "author": "Jonathan Freedland",
+      "tokens": 1174
+    },
+    {
+      "article_id": "cross_topic_1/train/3/train_31",
+      "author": "Jonathan Freedland",
+      "tokens": 1366
+    },
+    {
+      "article_id": "cross_topic_1/test/4/test_132",
+      "author": "Martin Kettle",
+      "tokens": 1246
+    },
+    {
+      "article_id": "cross_topic_1/test/4/test_138",
+      "author": "Martin Kettle",
+      "tokens": 1383
+    },
+    {
+      "article_id": "cross_topic_1/train/4/train_34",
+      "author": "Martin Kettle",
+      "tokens": 1228
+    },
+    {
+      "article_id": "cross_topic_1/train/4/train_37",
+      "author": "Martin Kettle",
+      "tokens": 1412
+    },
+    {
+      "article_id": "cross_topic_1/train/4/train_39",
+      "author": "Martin Kettle",
+      "tokens": 1288
+    }
+  ]
+}

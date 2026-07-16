@@ -19,6 +19,7 @@ import argparse
 import json
 import os
 import sys
+import tempfile
 from typing import Sequence
 
 import numpy as np

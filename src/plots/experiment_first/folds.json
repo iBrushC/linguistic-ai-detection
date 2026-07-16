@@ -1,0 +1,415 @@
+{
+  "manifest": {
+    "seed": 1729,
+    "n_authors": 5,
+    "n_essays_per_author": 5,
+    "chunk_size_tokens": 1000,
+    "min_chunk_fill_ratio": 0.8,
+    "min_chunks_per_essay": 1,
+    "n_essays_total": 25,
+    "essays": [
+      {
+        "article_id": "cross_topic_1/test/0/test_90",
+        "author": "Catherine Bennett",
+        "tokens": 1318
+      },
+      {
+        "article_id": "cross_topic_1/train/0/train_2",
+        "author": "Catherine Bennett",
+        "tokens": 1493
+      },
+      {
+        "article_id": "cross_topic_1/train/0/train_5",
+        "author": "Catherine Bennett",
+        "tokens": 1690
+      },
+      {
+        "article_id": "cross_topic_1/train/0/train_6",
+        "author": "Catherine Bennett",
+        "tokens": 1584
+      },
+      {
+        "article_id": "cross_topic_1/validation/0/validation_2",
+        "author": "Catherine Bennett",
+        "tokens": 1617
+      },
+      {
+        "article_id": "cross_topic_1/test/1/test_103",
+        "author": "George Monbiot",
+        "tokens": 1374
+      },
+      {
+        "article_id": "cross_topic_1/test/1/test_104",
+        "author": "George Monbiot",
+        "tokens": 1402
+      },
+      {
+        "article_id": "cross_topic_1/test/1/test_105",
+        "author": "George Monbiot",
+        "tokens": 1328
+      },
+      {
+        "article_id": "cross_topic_1/test/1/test_106",
+        "author": "George Monbiot",
+        "tokens": 1361
+      },
+      {
+        "article_id": "cross_topic_1/validation/1/validation_5",
+        "author": "George Monbiot",
+        "tokens": 899
+      },
+      {
+        "article_id": "cross_topic_1/test/2/test_119",
+        "author": "Hugo Young",
+        "tokens": 1108
+      },
+      {
+        "article_id": "cross_topic_1/test/2/test_13",
+        "author": "Hugo Young",
+        "tokens": 1353
+      },
+      {
+        "article_id": "cross_topic_1/test/2/test_16",
+        "author": "Hugo Young",
+        "tokens": 1341
+      },
+      {
+        "article_id": "cross_topic_1/validation/2/validation_11",
+        "author": "Hugo Young",
+        "tokens": 1345
+      },
+      {
+        "article_id": "cross_topic_1/validation/2/validation_12",
+        "author": "Hugo Young",
+        "tokens": 1320
+      },
+      {
+        "article_id": "cross_topic_1/test/3/test_127",
+        "author": "Jonathan Freedland",
+        "tokens": 1428
+      },
+      {
+        "article_id": "cross_topic_1/test/3/test_22",
+        "author": "Jonathan Freedland",
+        "tokens": 1305
+      },
+      {
+        "article_id": "cross_topic_1/test/3/test_25",
+        "author": "Jonathan Freedland",
+        "tokens": 1958
+      },
+      {
+        "article_id": "cross_topic_1/train/3/train_27",
+        "author": "Jonathan Freedland",
+        "tokens": 1174
+      },
+      {
+        "article_id": "cross_topic_1/train/3/train_31",
+        "author": "Jonathan Freedland",
+        "tokens": 1366
+      },
+      {
+        "article_id": "cross_topic_1/test/4/test_132",
+        "author": "Martin Kettle",
+        "tokens": 1246
+      },
+      {
+        "article_id": "cross_topic_1/test/4/test_138",
+        "author": "Martin Kettle",
+        "tokens": 1383
+      },
+      {
+        "article_id": "cross_topic_1/train/4/train_34",
+        "author": "Martin Kettle",
+        "tokens": 1228
+      },
+      {
+        "article_id": "cross_topic_1/train/4/train_37",
+        "author": "Martin Kettle",
+        "tokens": 1412
+      },
+      {
+        "article_id": "cross_topic_1/train/4/train_39",
+        "author": "Martin Kettle",
+        "tokens": 1288
+      }
+    ]
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "author": "Catherine Bennett",
+      "target_article_id": "cross_topic_1/test/0/test_90",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9796916745026258,
+      "generated_mean_distance": 0.9996393833439029,
+      "delta_natural_vs_generated": 0.019947708841277056
+    },
+    {
+      "fold": 1,
+      "author": "Catherine Bennett",
+      "target_article_id": "cross_topic_1/train/0/train_2",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9121093345050671,
+      "generated_mean_distance": 0.9859428862823629,
+      "delta_natural_vs_generated": 0.07383355177729578
+    },
+    {
+      "fold": 2,
+      "author": "Catherine Bennett",
+      "target_article_id": "cross_topic_1/train/0/train_5",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 2,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.8869199747985272,
+      "generated_mean_distance": 1.0043320583131283,
+      "delta_natural_vs_generated": 0.11741208351460108
+    },
+    {
+      "fold": 3,
+      "author": "Catherine Bennett",
+      "target_article_id": "cross_topic_1/train/0/train_6",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 2,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9912012345882878,
+      "generated_mean_distance": 0.9914803765186981,
+      "delta_natural_vs_generated": 0.00027914193041034263
+    },
+    {
+      "fold": 4,
+      "author": "Catherine Bennett",
+      "target_article_id": "cross_topic_1/validation/0/validation_2",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9112912036731132,
+      "generated_mean_distance": 0.998295770815255,
+      "delta_natural_vs_generated": 0.08700456714214178
+    },
+    {
+      "fold": 5,
+      "author": "George Monbiot",
+      "target_article_id": "cross_topic_1/test/1/test_103",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.968761954257686,
+      "generated_mean_distance": 0.9743658538948587,
+      "delta_natural_vs_generated": 0.005603899637172782
+    },
+    {
+      "fold": 6,
+      "author": "George Monbiot",
+      "target_article_id": "cross_topic_1/test/1/test_104",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.7796657399091915,
+      "generated_mean_distance": 1.0072332303415064,
+      "delta_natural_vs_generated": 0.22756749043231483
+    },
+    {
+      "fold": 7,
+      "author": "George Monbiot",
+      "target_article_id": "cross_topic_1/test/1/test_105",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.8442470351006515,
+      "generated_mean_distance": 0.9975770403578476,
+      "delta_natural_vs_generated": 0.1533300052571961
+    },
+    {
+      "fold": 8,
+      "author": "George Monbiot",
+      "target_article_id": "cross_topic_1/test/1/test_106",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.8026069923783548,
+      "generated_mean_distance": 1.0068093358161934,
+      "delta_natural_vs_generated": 0.2042023434378386
+    },
+    {
+      "fold": 9,
+      "author": "George Monbiot",
+      "target_article_id": "cross_topic_1/validation/1/validation_5",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9574854894669924,
+      "generated_mean_distance": 0.7568142610675321,
+      "delta_natural_vs_generated": -0.20067122839946028
+    },
+    {
+      "fold": 10,
+      "author": "Hugo Young",
+      "target_article_id": "cross_topic_1/test/2/test_119",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.5501189862262699,
+      "generated_mean_distance": 0.989583326077712,
+      "delta_natural_vs_generated": 0.4394643398514422
+    },
+    {
+      "fold": 11,
+      "author": "Hugo Young",
+      "target_article_id": "cross_topic_1/test/2/test_13",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.5749988147627474,
+      "generated_mean_distance": 0.9803051743839944,
+      "delta_natural_vs_generated": 0.40530635962124706
+    },
+    {
+      "fold": 12,
+      "author": "Hugo Young",
+      "target_article_id": "cross_topic_1/test/2/test_16",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.5568592655341734,
+      "generated_mean_distance": 0.9853547958158487,
+      "delta_natural_vs_generated": 0.4284955302816753
+    },
+    {
+      "fold": 13,
+      "author": "Hugo Young",
+      "target_article_id": "cross_topic_1/validation/2/validation_11",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.6053229654974343,
+      "generated_mean_distance": 0.9905112754785199,
+      "delta_natural_vs_generated": 0.38518830998108566
+    },
+    {
+      "fold": 14,
+      "author": "Hugo Young",
+      "target_article_id": "cross_topic_1/validation/2/validation_12",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9844875807945447,
+      "generated_mean_distance": 0.9992547791339031,
+      "delta_natural_vs_generated": 0.014767198339358467
+    },
+    {
+      "fold": 15,
+      "author": "Jonathan Freedland",
+      "target_article_id": "cross_topic_1/test/3/test_127",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 5,
+      "natural_mean_distance": 1.005913037441558,
+      "generated_mean_distance": 1.013405499457705,
+      "delta_natural_vs_generated": 0.007492462016147172
+    },
+    {
+      "fold": 16,
+      "author": "Jonathan Freedland",
+      "target_article_id": "cross_topic_1/test/3/test_22",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 5,
+      "natural_mean_distance": 0.7220751158781706,
+      "generated_mean_distance": 1.0045165167637866,
+      "delta_natural_vs_generated": 0.282441400885616
+    },
+    {
+      "fold": 17,
+      "author": "Jonathan Freedland",
+      "target_article_id": "cross_topic_1/test/3/test_25",
+      "natural_n_chunks": 2,
+      "generated_n_chunks": 2,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.7670036904765614,
+      "generated_mean_distance": 0.718626351114745,
+      "delta_natural_vs_generated": -0.04837733936181632
+    },
+    {
+      "fold": 18,
+      "author": "Jonathan Freedland",
+      "target_article_id": "cross_topic_1/train/3/train_27",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 5,
+      "natural_mean_distance": 0.7981943373815615,
+      "generated_mean_distance": 0.7908728186651844,
+      "delta_natural_vs_generated": -0.007321518716377096
+    },
+    {
+      "fold": 19,
+      "author": "Jonathan Freedland",
+      "target_article_id": "cross_topic_1/train/3/train_31",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 5,
+      "natural_mean_distance": 0.6411270370744562,
+      "generated_mean_distance": 0.6422798884436917,
+      "delta_natural_vs_generated": 0.0011528513692354858
+    },
+    {
+      "fold": 20,
+      "author": "Martin Kettle",
+      "target_article_id": "cross_topic_1/test/4/test_132",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9724644633693915,
+      "generated_mean_distance": 1.0109463875982956,
+      "delta_natural_vs_generated": 0.03848192422890406
+    },
+    {
+      "fold": 21,
+      "author": "Martin Kettle",
+      "target_article_id": "cross_topic_1/test/4/test_138",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9475249234134913,
+      "generated_mean_distance": 0.9931780628739,
+      "delta_natural_vs_generated": 0.04565313946040872
+    },
+    {
+      "fold": 22,
+      "author": "Martin Kettle",
+      "target_article_id": "cross_topic_1/train/4/train_34",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.8474990095741026,
+      "generated_mean_distance": 0.9583102706949206,
+      "delta_natural_vs_generated": 0.11081126112081796
+    },
+    {
+      "fold": 23,
+      "author": "Martin Kettle",
+      "target_article_id": "cross_topic_1/train/4/train_37",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.8645134805161798,
+      "generated_mean_distance": 0.9488425741993192,
+      "delta_natural_vs_generated": 0.08432909368313934
+    },
+    {
+      "fold": 24,
+      "author": "Martin Kettle",
+      "target_article_id": "cross_topic_1/train/4/train_39",
+      "natural_n_chunks": 1,
+      "generated_n_chunks": 1,
+      "corpus_n_chunks": 4,
+      "natural_mean_distance": 0.9580721874898898,
+      "generated_mean_distance": 0.9576043296268633,
+      "delta_natural_vs_generated": -0.00046785786302649957
+    }
+  ]
+}
