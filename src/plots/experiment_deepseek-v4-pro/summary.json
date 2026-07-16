@@ -1,0 +1,58 @@
+{
+  "n_folds": 25,
+  "overall": {
+    "natural_mean": 0.8332147931364656,
+    "natural_std": 0.14938237035423088,
+    "generated_mean": 0.9901178819059747,
+    "generated_std": 0.020941361435563407,
+    "delta_mean": 0.1569030887695092,
+    "delta_std": 0.15483076145237976
+  },
+  "per_author": {
+    "Catherine Bennett": {
+      "n_folds": 5,
+      "natural_mean": 0.9360396726344069,
+      "natural_std": 0.04858777799446223,
+      "generated_mean": 0.9959338462417783,
+      "generated_std": 0.012841298966038505,
+      "delta_mean": 0.0598941736073715,
+      "delta_std": 0.052641532390156086
+    },
+    "George Monbiot": {
+      "n_folds": 5,
+      "natural_mean": 0.8694884125485132,
+      "natural_std": 0.08758629079329426,
+      "generated_mean": 0.9961141832096677,
+      "generated_std": 0.020370994184855103,
+      "delta_mean": 0.12662577066115432,
+      "delta_std": 0.10677555407171951
+    },
+    "Hugo Young": {
+      "n_folds": 5,
+      "natural_mean": 0.6542017412107058,
+      "natural_std": 0.18613126304712554,
+      "generated_mean": 0.9913787271323997,
+      "generated_std": 0.008596111949020905,
+      "delta_mean": 0.337176985921694,
+      "delta_std": 0.191807974115067
+    },
+    "Jonathan Freedland": {
+      "n_folds": 5,
+      "natural_mean": 0.7885350718485565,
+      "natural_std": 0.14012349427902743,
+      "generated_mean": 1.0025433208712589,
+      "generated_std": 0.018505521805144493,
+      "delta_mean": 0.21400824902270238,
+      "delta_std": 0.1336667115869712
+    },
+    "Martin Kettle": {
+      "n_folds": 5,
+      "natural_mean": 0.9178090674401449,
+      "natural_std": 0.056748508243733266,
+      "generated_mean": 0.9646193320747688,
+      "generated_std": 0.023239984914790204,
+      "delta_mean": 0.04681026463462379,
+      "delta_std": 0.04739945648744987
+    }
+  }
+}

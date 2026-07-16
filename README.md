@@ -137,3 +137,26 @@ python -m src.generate details --model glm-5.2 --use-selector generated/experime
 python -m src.generate recreate --model glm-5.2 --use-selector generated/experiment_manifest.json
 python -m src.experiment score --manifest generated/experiment_manifest.json --out-dir src/plots/experiment_first
 ```
+
+### Multi-model cross-validation
+
+`scripts/run_multi_model_test.py` runs the pipeline against every alias in
+`models.json`. Existing recreation files are detected and skipped, so re-runs
+just resume missing work. Each model is scored under its own
+`src/plots/experiment_<alias>/` directory and the results are aggregated into
+`src/plots/experiment_multi/`.
+
+```
+set OPENROUTER_API_KEY=...
+python scripts/run_multi_model_test.py                                # real run, all aliases
+python scripts/run_multi_model_test.py --dry-run                      # offline sanity check
+python scripts/run_multi_model_test.py --models glm-5.2 chatgpt-5.6   # restrict to a subset
+python scripts/run_multi_model_test.py --model-workers 4              # 4 parallel essays per model
+python scripts/run_multi_model_test.py --models-concurrency 2         # 2 models in parallel
+python scripts/run_multi_model_test.py --skip-models chatgpt-5.6      # exclude a model
+python scripts/run_multi_model_test.py --force                        # regenerate and re-score
+```
+
+Outputs per model: `src/plots/experiment_<alias>/{folds.json, summary.json,
+folds_cosine_delta.png}`. Aggregated outputs:
+`src/plots/experiment_multi/{summary.json, comparison_cosine_delta.png}`.
