@@ -26,6 +26,7 @@ if SCRIPTS_DIR not in sys.path:
 
 EXPECTED_CSVS = [
     "ranking_cosine_delta.csv",
+    "ranking_cosine_match.csv",
     "author_breakdown.csv",
     "trick_analysis.csv",
     "cost_vs_performance.csv",
@@ -35,6 +36,7 @@ EXPECTED_CSVS = [
 ]
 EXPECTED_PNGS = [
     "ranking_cosine_delta.png",
+    "ranking_cosine_match.png",
     "author_breakdown.png",
     "trick_analysis.png",
     "cost_vs_performance.png",

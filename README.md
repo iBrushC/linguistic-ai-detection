@@ -90,6 +90,51 @@ end-to-end smoke test on a synthetic corpus.
 reference corpus path, feature set, distance set, permutation count,
 output directory. CLI flags override individual keys.
 
+## Results
+
+Headline numbers from the four-model OpenRouter cross-validation
+(`chatgpt-5.6`, `claude-opus-4.8`, `deepseek-v4-pro`, `glm-5.2`, 99
+kept folds). Cosine Delta on the MFW z-scored reference is the
+distance metric throughout: lower = closer in style.
+
+**Closest stylometric match to the natural author**
+
+The recreated AI essays cluster well below the natural essays' own
+distance to their author corpus. `glm-5.2` is the closest mimic on
+average, but every model lands in the same regime - stylometry flags
+the AI text from a single distance score.
+
+![Author vs AI Closeness](src/plots/experiment_multi/final/ranking_cosine_match.png)
+
+| Entity | n | mean | std |
+|---|---|---|---|
+| Natural (authors) | 24 | 0.167 | 0.149 |
+| `glm-5.2` | 25 | 0.053 | 0.101 |
+| `claude-opus-4.8` | 25 | 0.040 | 0.085 |
+| `chatgpt-5.6` | 24 | 0.015 | 0.021 |
+| `deepseek-v4-pro` | 25 | 0.010 | 0.021 |
+
+**Tricks (AI essay closer to the author than the author's own essay)**
+
+A "trick" is a fold where the recreated essay's mean Cosine Delta to
+the same-author corpus is *lower* than the natural target's own
+distance - the detector would label the AI essay as the author before
+the real one. Pooled across all four models the rate is 14.1%; `glm-5.2`
+tricks the detector most often (24%) and `claude-opus-4.8` least (8%).
+
+![Trick Analysis](src/plots/experiment_multi/final/trick_analysis.png)
+
+| Model | Folds | Tricks | Rate | Mean Delta | Median Delta |
+|---|---|---|---|---|---|
+| `chatgpt-5.6` | 24 | 3 | 12.5% | 0.159 | 0.110 |
+| `claude-opus-4.8` | 25 | 2 | 8.0% | 0.127 | 0.096 |
+| `deepseek-v4-pro` | 25 | 3 | 12.0% | 0.157 | 0.100 |
+| `glm-5.2` | 25 | 6 | 24.0% | 0.113 | 0.076 |
+| **All pooled** | 99 | 14 | 14.1% | 0.139 | 0.096 |
+
+See `src/plots/experiment_multi/final/final_report.md` for the
+detection ROC, per-author breakdown, cost-vs-performance, and caveats.
+
 ## OpenRouter cross-validation experiment
 
 Tests whether Cosine Delta can flag AI text masquerading as a target

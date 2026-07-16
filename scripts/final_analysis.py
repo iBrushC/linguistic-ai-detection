@@ -6,6 +6,8 @@ OpenRouter SDK did not persist usage), and emits the consolidated plots
 and tables requested in the final-analysis brief:
 
 * request 1a -- ``ranking_cosine_delta`` : pooled author-vs-models bar.
+* request 1a'-- ``ranking_cosine_match`` : same data on a 1-delta (closeness)
+  scale, y-axis clamped to 0..0.25 for readability.
 * request 1b -- ``author_breakdown``     : per-author grouped bars.
 * request 2  -- ``trick_analysis``       : "fooled the detector" counts.
 * request 3  -- ``cost_vs_performance``  : USD vs mean Cosine Delta.
@@ -286,6 +288,81 @@ def plot_ranking(models: list[ModelData], natural_overall: dict, out_dir: str) -
     plt.close(fig)
 
     csv_path = os.path.join(out_dir, "ranking_cosine_delta.csv")
+    with open(csv_path, "w", encoding="utf-8", newline="") as f:
+        f.write("entity,kind,n,mean,std\n")
+        for r in rows:
+            f.write(f"{r['entity']},{r['kind']},{r['n']},{r['mean']:.6f},{r['std']:.6f}\n")
+    return {"plot": path, "csv": csv_path, "rows": rows}
+
+
+# --- 1a' ranking_cosine_match (1 - delta, 0..0.25 view) -----------------
+
+
+def plot_ranking_match(models: list[ModelData], natural_overall: dict, out_dir: str) -> dict:
+    """Same data as ``plot_ranking`` but on a 1-delta (closeness) scale, 0..0.25.
+
+    The original ``ranking_cosine_delta`` plot shows Cosine Delta directly
+    (means clustered near 0.85-0.99), so the visual differences between
+    entities are squashed. This companion view subtracts each value from 1
+    so larger bars mean "closer match to the corpus", and zooms the y-axis
+    to 0..0.25 so the spread becomes legible at a glance.
+    """
+    rows: list[dict] = []
+    rows.append({
+        "entity": "Author",
+        "kind": "natural",
+        "n": len(models[0].folds),
+        "mean": 1.0 - natural_overall["natural_mean"],
+        "std": natural_overall.get("natural_std", 0.0),
+    })
+
+    for m in models:
+        gen_deltas = [f["generated_mean_distance"] for f in m.folds
+                      if not (isinstance(f["generated_mean_distance"], float)
+                              and np.isnan(f["generated_mean_distance"]))]
+        if not gen_deltas:
+            mean_v = float("nan")
+            std_v = 0.0
+        else:
+            mean_v = 1.0 - float(np.mean(gen_deltas))
+            std_v = float(np.std(gen_deltas, ddof=1)) if len(gen_deltas) > 1 else 0.0
+        rows.append({
+            "entity": m.alias,
+            "kind": "model_ai",
+            "n": len(gen_deltas),
+            "mean": mean_v,
+            "std": std_v,
+        })
+
+    # Author (natural) should appear first since it's the closeness baseline.
+    rows.sort(key=lambda r: (np.isnan(r["mean"]), -r["mean"]))
+
+    labels = [r["entity"] for r in rows]
+    means = [r["mean"] for r in rows]
+    # stds = [r["std"] for r in rows]
+    colors = ["steelblue" if r["kind"] == "natural" else "darkorange" for r in rows]
+
+    fig, ax = plt.subplots(figsize=(10, 5.5))
+    x = np.arange(len(rows))
+    ax.bar(x, means, color=colors, edgecolor="black", capsize=4)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=20, ha="right")
+    ax.set_ylabel("1 - Mean Cosine Delta  (higher = better)")
+    ax.set_ylim(0.0, 0.25)
+    ax.set_title("Author vs AI: How Closely New Text Match Corpus")
+    legend_handles = [
+        plt.Rectangle((0, 0), 1, 1, color="steelblue", label="Author (natural)"),
+        plt.Rectangle((0, 0), 1, 1, color="darkorange", label="AI model"),
+    ]
+    ax.legend(handles=legend_handles, loc="upper center",
+              bbox_to_anchor=(0.5, -0.22), ncol=2, frameon=True)
+    ax.grid(True, alpha=0.3, axis="y")
+    fig.tight_layout()
+    path = os.path.join(out_dir, "ranking_cosine_match.png")
+    fig.savefig(path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+    csv_path = os.path.join(out_dir, "ranking_cosine_match.csv")
     with open(csv_path, "w", encoding="utf-8", newline="") as f:
         f.write("entity,kind,n,mean,std\n")
         for r in rows:
@@ -1083,6 +1160,7 @@ negatives.
 ## Plots
 
 - ![Generalized Ranking](ranking_cosine_delta.png)
+- ![Author vs AI Closeness](ranking_cosine_match.png)
 - ![Per-Author Breakdown](author_breakdown.png)
 - ![Trick Analysis](trick_analysis.png)
 - ![Cost vs Performance](cost_vs_performance.png)
@@ -1150,6 +1228,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     # 1a
     natural_overall = pooled_natural(models)
     ranking = plot_ranking(models, natural_overall, out_dir)
+    ranking_match = plot_ranking_match(models, natural_overall, out_dir)
 
     # 1b
     author_breakdown = plot_author_breakdown(models, summary_multi, out_dir)

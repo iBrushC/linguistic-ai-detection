@@ -23,7 +23,7 @@ This report consolidates the four-model OpenRouter cross-validation
 
 Pricing for input/output USD per 1M tokens, with thinking treated as negligible per user instruction.
 
-| Model | Input \$/1M | Output \$/1M |
+| Model | Input $/1M | Output $/1M |
 |---|---|---|
 | `claude-opus-4.8` | 5.000 | 25.000 |
 | `chatgpt-5.6` | 5.000 | 30.000 |
@@ -42,8 +42,8 @@ four re-creation models. Its cost is attributed to `glm-5.2` (the model
 that actually generated the assignments) and amortized
 (divide by 4) for the comparison table below.
 
-| Model | Re-create input | Re-create output | Details overhead | Recreate \$ | Total \$ |
-|---|---|---|---|---|---|
+| Model | Re-create input | Re-create output | Details overhead (paid once via glm) | Recreate $ | Total $ |
+|---|---|---|---|---|
 | `chatgpt-5.6` | 923,965 | 40,455 | ~0.20 | 5.83 | **6.04** |
 | `claude-opus-4.8` | 923,965 | 34,788 | ~0.18 | 5.49 | **5.67** |
 | `deepseek-v4-pro` | 923,965 | 42,362 | ~0.01 | 0.44 | **0.45** |
@@ -94,6 +94,7 @@ negatives.
 ## Plots
 
 - ![Generalized Ranking](ranking_cosine_delta.png)
+- ![Author vs AI Closeness](ranking_cosine_match.png)
 - ![Per-Author Breakdown](author_breakdown.png)
 - ![Trick Analysis](trick_analysis.png)
 - ![Cost vs Performance](cost_vs_performance.png)

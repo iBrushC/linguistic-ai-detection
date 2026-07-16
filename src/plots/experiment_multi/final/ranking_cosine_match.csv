@@ -1,0 +1,6 @@
+entity,kind,n,mean,std
+Author,natural,24,0.166785,0.149382
+glm-5.2,model_ai,25,0.053439,0.100772
+claude-opus-4.8,model_ai,25,0.039547,0.085245
+chatgpt-5.6,model_ai,24,0.014502,0.021070
+deepseek-v4-pro,model_ai,25,0.009882,0.020941
